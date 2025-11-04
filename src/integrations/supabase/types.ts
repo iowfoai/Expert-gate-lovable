@@ -14,7 +14,88 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          bio: string | null
+          country: string | null
+          created_at: string
+          credentials_document_url: string | null
+          education_level: Database["public"]["Enums"]["education_level"] | null
+          email: string
+          field_of_expertise: string[] | null
+          full_name: string
+          id: string
+          institution: string | null
+          interviews_remaining: number | null
+          is_available: boolean | null
+          monthly_interview_limit: number | null
+          professional_website: string | null
+          profile_image_url: string | null
+          publications: string | null
+          research_field: string[] | null
+          research_institution: string | null
+          updated_at: string
+          user_type: Database["public"]["Enums"]["user_type"]
+          verification_notes: string | null
+          verification_status: string | null
+          years_of_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          country?: string | null
+          created_at?: string
+          credentials_document_url?: string | null
+          education_level?:
+            | Database["public"]["Enums"]["education_level"]
+            | null
+          email: string
+          field_of_expertise?: string[] | null
+          full_name: string
+          id: string
+          institution?: string | null
+          interviews_remaining?: number | null
+          is_available?: boolean | null
+          monthly_interview_limit?: number | null
+          professional_website?: string | null
+          profile_image_url?: string | null
+          publications?: string | null
+          research_field?: string[] | null
+          research_institution?: string | null
+          updated_at?: string
+          user_type: Database["public"]["Enums"]["user_type"]
+          verification_notes?: string | null
+          verification_status?: string | null
+          years_of_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          country?: string | null
+          created_at?: string
+          credentials_document_url?: string | null
+          education_level?:
+            | Database["public"]["Enums"]["education_level"]
+            | null
+          email?: string
+          field_of_expertise?: string[] | null
+          full_name?: string
+          id?: string
+          institution?: string | null
+          interviews_remaining?: number | null
+          is_available?: boolean | null
+          monthly_interview_limit?: number | null
+          professional_website?: string | null
+          profile_image_url?: string | null
+          publications?: string | null
+          research_field?: string[] | null
+          research_institution?: string | null
+          updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+          verification_notes?: string | null
+          verification_status?: string | null
+          years_of_experience?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +104,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      education_level:
+        | "bachelors"
+        | "masters"
+        | "phd"
+        | "postdoc"
+        | "professor"
+        | "industry_professional"
+      user_type: "researcher" | "expert"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +238,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      education_level: [
+        "bachelors",
+        "masters",
+        "phd",
+        "postdoc",
+        "professor",
+        "industry_professional",
+      ],
+      user_type: ["researcher", "expert"],
+    },
   },
 } as const
