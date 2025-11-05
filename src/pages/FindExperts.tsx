@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Input } from "@/components/ui/input";
@@ -40,10 +41,252 @@ const mockExperts = [
     interviews: 42,
     available: false,
     country: "UK"
+  },
+  {
+    id: 4,
+    name: "Dr. Michael Rodriguez",
+    title: "Quantum Physics Professor",
+    institution: "Caltech",
+    expertise: ["Quantum Computing", "Theoretical Physics", "Nanotechnology"],
+    rating: 4.7,
+    interviews: 31,
+    available: true,
+    country: "USA"
+  },
+  {
+    id: 5,
+    name: "Prof. Amelia Zhang",
+    title: "Economics & Policy Expert",
+    institution: "Harvard University",
+    expertise: ["Behavioral Economics", "Public Policy", "Development Economics"],
+    rating: 4.9,
+    interviews: 45,
+    available: true,
+    country: "USA"
+  },
+  {
+    id: 6,
+    name: "Dr. Thomas Anderson",
+    title: "Neuroscience Researcher",
+    institution: "Cambridge University",
+    expertise: ["Cognitive Neuroscience", "Brain Imaging", "Memory Research"],
+    rating: 4.8,
+    interviews: 38,
+    available: true,
+    country: "UK"
+  },
+  {
+    id: 7,
+    name: "Prof. Priya Sharma",
+    title: "Renewable Energy Specialist",
+    institution: "IIT Delhi",
+    expertise: ["Solar Energy", "Energy Storage", "Smart Grids"],
+    rating: 4.6,
+    interviews: 22,
+    available: false,
+    country: "India"
+  },
+  {
+    id: 8,
+    name: "Dr. Lucas Martin",
+    title: "Marine Biology Professor",
+    institution: "University of Queensland",
+    expertise: ["Marine Conservation", "Coral Reefs", "Ocean Acidification"],
+    rating: 4.9,
+    interviews: 29,
+    available: true,
+    country: "Australia"
+  },
+  {
+    id: 9,
+    name: "Prof. Fatima Al-Rashid",
+    title: "Cybersecurity Expert",
+    institution: "ETH Zurich",
+    expertise: ["Network Security", "Cryptography", "Cyber Threat Intelligence"],
+    rating: 5.0,
+    interviews: 33,
+    available: true,
+    country: "Switzerland"
+  },
+  {
+    id: 10,
+    name: "Dr. Robert Kim",
+    title: "Cancer Research Scientist",
+    institution: "Johns Hopkins University",
+    expertise: ["Oncology", "Immunotherapy", "Clinical Trials"],
+    rating: 4.8,
+    interviews: 51,
+    available: false,
+    country: "USA"
+  },
+  {
+    id: 11,
+    name: "Prof. Isabella Rossi",
+    title: "Art History Scholar",
+    institution: "Sapienza University of Rome",
+    expertise: ["Renaissance Art", "Cultural Heritage", "Museum Studies"],
+    rating: 4.7,
+    interviews: 19,
+    available: true,
+    country: "Italy"
+  },
+  {
+    id: 12,
+    name: "Dr. Ahmed Hassan",
+    title: "Data Science Researcher",
+    institution: "University of Toronto",
+    expertise: ["Big Data Analytics", "Machine Learning", "Statistical Modeling"],
+    rating: 4.9,
+    interviews: 40,
+    available: true,
+    country: "Canada"
+  },
+  {
+    id: 13,
+    name: "Prof. Sophie Dubois",
+    title: "Psychology & Behavior Expert",
+    institution: "Sorbonne University",
+    expertise: ["Social Psychology", "Human Behavior", "Mental Health"],
+    rating: 4.8,
+    interviews: 36,
+    available: true,
+    country: "France"
+  },
+  {
+    id: 14,
+    name: "Dr. Hiroshi Tanaka",
+    title: "Robotics Engineer",
+    institution: "University of Tokyo",
+    expertise: ["Robotics", "Automation", "Human-Robot Interaction"],
+    rating: 4.6,
+    interviews: 27,
+    available: false,
+    country: "Japan"
+  },
+  {
+    id: 15,
+    name: "Prof. Maria Santos",
+    title: "Agricultural Science Professor",
+    institution: "University of São Paulo",
+    expertise: ["Sustainable Agriculture", "Crop Science", "Food Security"],
+    rating: 4.7,
+    interviews: 24,
+    available: true,
+    country: "Brazil"
+  },
+  {
+    id: 16,
+    name: "Dr. David Thompson",
+    title: "Aerospace Engineering Specialist",
+    institution: "Georgia Tech",
+    expertise: ["Aerodynamics", "Spacecraft Design", "Propulsion Systems"],
+    rating: 4.9,
+    interviews: 30,
+    available: true,
+    country: "USA"
+  },
+  {
+    id: 17,
+    name: "Prof. Elena Petrova",
+    title: "Literature & Linguistics Expert",
+    institution: "Moscow State University",
+    expertise: ["Comparative Literature", "Linguistics", "Translation Studies"],
+    rating: 4.5,
+    interviews: 16,
+    available: true,
+    country: "Russia"
+  },
+  {
+    id: 18,
+    name: "Dr. William O'Brien",
+    title: "Biomedical Engineering Professor",
+    institution: "Trinity College Dublin",
+    expertise: ["Medical Devices", "Biomaterials", "Tissue Engineering"],
+    rating: 4.8,
+    interviews: 32,
+    available: false,
+    country: "Ireland"
+  },
+  {
+    id: 19,
+    name: "Prof. Yuki Nakamura",
+    title: "Environmental Chemistry Researcher",
+    institution: "Kyoto University",
+    expertise: ["Pollution Control", "Green Chemistry", "Atmospheric Science"],
+    rating: 4.7,
+    interviews: 26,
+    available: true,
+    country: "Japan"
+  },
+  {
+    id: 20,
+    name: "Dr. Carmen Diaz",
+    title: "Urban Planning Expert",
+    institution: "Polytechnic University of Madrid",
+    expertise: ["Smart Cities", "Urban Design", "Transportation Planning"],
+    rating: 4.6,
+    interviews: 21,
+    available: true,
+    country: "Spain"
+  },
+  {
+    id: 21,
+    name: "Prof. Lars Andersen",
+    title: "Genetics & Genomics Researcher",
+    institution: "University of Copenhagen",
+    expertise: ["Human Genetics", "Gene Therapy", "Precision Medicine"],
+    rating: 4.9,
+    interviews: 44,
+    available: true,
+    country: "Denmark"
+  },
+  {
+    id: 22,
+    name: "Dr. Olivia Park",
+    title: "Educational Technology Specialist",
+    institution: "Seoul National University",
+    expertise: ["EdTech", "Online Learning", "Curriculum Development"],
+    rating: 4.8,
+    interviews: 34,
+    available: true,
+    country: "South Korea"
+  },
+  {
+    id: 23,
+    name: "Prof. Marcus Johnson",
+    title: "Philosophy & Ethics Scholar",
+    institution: "Yale University",
+    expertise: ["Ethics", "Political Philosophy", "Bioethics"],
+    rating: 4.7,
+    interviews: 25,
+    available: false,
+    country: "USA"
   }
 ];
 
 const FindExperts = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
+
+  const allExpertiseFields = Array.from(
+    new Set(mockExperts.flatMap(expert => expert.expertise))
+  ).sort();
+
+  const filteredExperts = mockExperts.filter(expert => {
+    const matchesSearch = searchQuery === "" || 
+      expert.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      expert.institution.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      expert.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesFilter = 
+      selectedFilter === "all" ||
+      (selectedFilter === "available" && expert.available) ||
+      (selectedFilter === "top-rated" && expert.rating >= 4.8) ||
+      expert.expertise.includes(selectedFilter);
+    
+    return matchesSearch && matchesFilter;
+  });
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
@@ -63,22 +306,56 @@ const FindExperts = () => {
             <Input 
               placeholder="Search by name, field, or institution..." 
               className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button>Search</Button>
+          <Button onClick={() => setSearchQuery("")}>
+            {searchQuery ? "Clear" : "Search"}
+          </Button>
         </div>
         
         {/* Filters */}
         <div className="mb-8 flex gap-3 flex-wrap">
-          <Button variant="outline" size="sm">All Fields</Button>
-          <Button variant="outline" size="sm">Available Now</Button>
-          <Button variant="outline" size="sm">Top Rated</Button>
-          <Button variant="outline" size="sm">Location</Button>
+          <Button 
+            variant={selectedFilter === "all" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setSelectedFilter("all")}
+          >
+            All Fields
+          </Button>
+          <Button 
+            variant={selectedFilter === "available" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setSelectedFilter("available")}
+          >
+            Available Now
+          </Button>
+          <Button 
+            variant={selectedFilter === "top-rated" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setSelectedFilter("top-rated")}
+          >
+            Top Rated
+          </Button>
+          {allExpertiseFields.slice(0, 8).map((field) => (
+            <Button
+              key={field}
+              variant={selectedFilter === field ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedFilter(field)}
+            >
+              {field}
+            </Button>
+          ))}
         </div>
         
         {/* Expert Cards */}
+        <div className="mb-4 text-sm text-muted-foreground">
+          Showing {filteredExperts.length} expert{filteredExperts.length !== 1 ? 's' : ''}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockExperts.map((expert) => (
+          {filteredExperts.map((expert) => (
             <Card key={expert.id} className="hover:border-accent transition-colors">
               <CardHeader>
                 <div className="flex items-start gap-4">

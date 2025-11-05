@@ -15,6 +15,9 @@ const Navigation = () => {
           <Link to="/find-experts" className="text-sm font-medium hover:text-accent transition-colors">
             Find Experts
           </Link>
+          <Link to="/expert-dashboard" className="text-sm font-medium hover:text-accent transition-colors">
+            Expert View
+          </Link>
           <Link to="/how-it-works" className="text-sm font-medium hover:text-accent transition-colors">
             How It Works
           </Link>

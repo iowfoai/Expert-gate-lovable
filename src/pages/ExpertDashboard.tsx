@@ -1,0 +1,351 @@
+import { useState, useEffect } from "react";
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, Star, Users, Clock, CheckCircle, XCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+const ExpertDashboard = () => {
+  const navigate = useNavigate();
+  const [isAvailable, setIsAvailable] = useState(true);
+
+  // Mock expert data
+  const expertProfile = {
+    name: "Dr. Sarah Mitchell",
+    title: "Professor of Climate Science",
+    institution: "MIT",
+    expertise: ["Climate Change", "Environmental Policy", "Sustainability"],
+    rating: 4.9,
+    totalInterviews: 28,
+    interviewsRemaining: 3,
+    monthlyLimit: 5
+  };
+
+  // Mock pending requests
+  const pendingRequests = [
+    {
+      id: 1,
+      researcherName: "John Smith",
+      researchTopic: "Impact of climate change on coastal ecosystems",
+      requestedDate: "2025-11-10",
+      duration: "45 minutes",
+      status: "pending"
+    },
+    {
+      id: 2,
+      researcherName: "Emily Chen",
+      researchTopic: "Renewable energy policy frameworks",
+      requestedDate: "2025-11-12",
+      duration: "60 minutes",
+      status: "pending"
+    }
+  ];
+
+  // Mock upcoming interviews
+  const upcomingInterviews = [
+    {
+      id: 3,
+      researcherName: "David Brown",
+      researchTopic: "Carbon capture technologies",
+      scheduledDate: "2025-11-08",
+      time: "14:00",
+      duration: "30 minutes",
+      status: "confirmed"
+    }
+  ];
+
+  // Mock past interviews
+  const pastInterviews = [
+    {
+      id: 4,
+      researcherName: "Maria Garcia",
+      researchTopic: "Environmental sustainability in urban planning",
+      completedDate: "2025-10-28",
+      duration: "45 minutes",
+      rating: 5
+    },
+    {
+      id: 5,
+      researcherName: "Alex Johnson",
+      researchTopic: "Climate policy implementation challenges",
+      completedDate: "2025-10-22",
+      duration: "60 minutes",
+      rating: 5
+    }
+  ];
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navigation />
+      
+      <div className="container mx-auto px-4 py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate("/find-experts")}
+            className="mb-4"
+          >
+            ← Back to Browse Experts
+          </Button>
+          <h1 className="text-4xl font-bold mb-2">Expert Dashboard</h1>
+          <p className="text-muted-foreground">
+            Manage your interview requests and availability
+          </p>
+        </div>
+
+        {/* Profile Overview */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Your Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-6">
+              <Avatar className="w-20 h-20">
+                <AvatarFallback className="bg-accent/10 text-accent font-semibold text-2xl">
+                  {expertProfile.name.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h3 className="text-2xl font-semibold mb-1">{expertProfile.name}</h3>
+                <p className="text-muted-foreground mb-1">{expertProfile.title}</p>
+                <p className="text-sm text-muted-foreground mb-3">{expertProfile.institution}</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {expertProfile.expertise.map((skill) => (
+                    <Badge key={skill} variant="secondary">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch 
+                    id="availability" 
+                    checked={isAvailable}
+                    onCheckedChange={setIsAvailable}
+                  />
+                  <Label htmlFor="availability" className="cursor-pointer">
+                    {isAvailable ? "Available for interviews" : "Not available"}
+                  </Label>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                  <Star className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{expertProfile.rating}</div>
+                  <div className="text-sm text-muted-foreground">Rating</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                  <Users className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{expertProfile.totalInterviews}</div>
+                  <div className="text-sm text-muted-foreground">Total Interviews</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{expertProfile.interviewsRemaining}</div>
+                  <div className="text-sm text-muted-foreground">This Month</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                  <div className="text-sm text-muted-foreground">Pending Requests</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabs for different sections */}
+        <Tabs defaultValue="requests" className="mb-8">
+          <TabsList className="mb-6">
+            <TabsTrigger value="requests">Pending Requests</TabsTrigger>
+            <TabsTrigger value="upcoming">Upcoming Interviews</TabsTrigger>
+            <TabsTrigger value="past">Past Interviews</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="requests">
+            <div className="space-y-4">
+              {pendingRequests.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6 text-center text-muted-foreground">
+                    No pending requests at the moment
+                  </CardContent>
+                </Card>
+              ) : (
+                pendingRequests.map((request) => (
+                  <Card key={request.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">{request.researcherName}</h3>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Research Topic: {request.researchTopic}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              {request.requestedDate}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {request.duration}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="default">
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Accept
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Decline
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="upcoming">
+            <div className="space-y-4">
+              {upcomingInterviews.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6 text-center text-muted-foreground">
+                    No upcoming interviews scheduled
+                  </CardContent>
+                </Card>
+              ) : (
+                upcomingInterviews.map((interview) => (
+                  <Card key={interview.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">{interview.researcherName}</h3>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Research Topic: {interview.researchTopic}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              {interview.scheduledDate} at {interview.time}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {interview.duration}
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="mt-2">
+                            {interview.status}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline">
+                            Reschedule
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="past">
+            <div className="space-y-4">
+              {pastInterviews.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6 text-center text-muted-foreground">
+                    No past interviews yet
+                  </CardContent>
+                </Card>
+              ) : (
+                pastInterviews.map((interview) => (
+                  <Card key={interview.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">{interview.researcherName}</h3>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Research Topic: {interview.researchTopic}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              {interview.completedDate}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {interview.duration}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 fill-gold text-gold" />
+                              {interview.rating}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+      
+      <Footer />
+    </div>
+  );
+};
+
+export default ExpertDashboard;
