@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import InterviewRequestDialog from "@/components/InterviewRequestDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,12 +9,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Star, Users, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Star, Users, Clock, CheckCircle, XCircle, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const ExpertDashboard = () => {
   const navigate = useNavigate();
   const [isAvailable, setIsAvailable] = useState(true);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
   // Mock expert data
   const expertProfile = {
@@ -33,6 +36,12 @@ const ExpertDashboard = () => {
       id: 1,
       researcherName: "John Smith",
       researchTopic: "Impact of climate change on coastal ecosystems",
+      description: "I am conducting research on how rising sea levels and ocean acidification are affecting marine biodiversity in coastal regions. I would like to understand the latest findings in climate science and potential mitigation strategies.",
+      questions: [
+        "What are the most significant impacts of ocean acidification on marine life?",
+        "How do current climate models predict sea level rise over the next 50 years?",
+        "What are the most effective policy interventions for coastal protection?"
+      ],
       requestedDate: "2025-11-10",
       duration: "10 minutes",
       status: "pending"
@@ -41,6 +50,12 @@ const ExpertDashboard = () => {
       id: 2,
       researcherName: "Emily Chen",
       researchTopic: "Renewable energy policy frameworks",
+      description: "My thesis explores comparative renewable energy policies across different countries. I'm particularly interested in understanding how policy design influences adoption rates and technological innovation.",
+      questions: [
+        "What are key differences between carbon tax and cap-and-trade systems?",
+        "How do renewable energy subsidies impact grid stability?",
+        "Which countries have the most effective renewable energy transition policies?"
+      ],
       requestedDate: "2025-11-12",
       duration: "8 minutes",
       status: "pending"
@@ -79,6 +94,11 @@ const ExpertDashboard = () => {
       rating: 5
     }
   ];
+
+  const handleViewDetails = (request: any) => {
+    setSelectedRequest(request);
+    setDetailsDialogOpen(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -234,15 +254,25 @@ const ExpertDashboard = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="default">
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Accept
+                        <div className="flex flex-col gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleViewDetails(request)}
+                          >
+                            <FileText className="w-4 h-4 mr-1" />
+                            See Interview Details
                           </Button>
-                          <Button size="sm" variant="outline">
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Decline
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="default">
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              Accept
+                            </Button>
+                            <Button size="sm" variant="outline">
+                              <XCircle className="w-4 h-4 mr-1" />
+                              Decline
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -342,6 +372,15 @@ const ExpertDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Interview Details Dialog */}
+      {selectedRequest && (
+        <InterviewRequestDialog
+          open={detailsDialogOpen}
+          onOpenChange={setDetailsDialogOpen}
+          request={selectedRequest}
+        />
+      )}
       
       <Footer />
     </div>

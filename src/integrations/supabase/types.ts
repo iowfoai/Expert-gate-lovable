@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      interview_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          description: string
+          duration_minutes: number
+          expert_id: string
+          expert_notes: string | null
+          id: string
+          preferred_date: string | null
+          questions: string[]
+          research_topic: string
+          researcher_feedback: string | null
+          researcher_id: string
+          researcher_rating: number | null
+          scheduled_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          description: string
+          duration_minutes: number
+          expert_id: string
+          expert_notes?: string | null
+          id?: string
+          preferred_date?: string | null
+          questions: string[]
+          research_topic: string
+          researcher_feedback?: string | null
+          researcher_id: string
+          researcher_rating?: number | null
+          scheduled_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string
+          duration_minutes?: number
+          expert_id?: string
+          expert_notes?: string | null
+          id?: string
+          preferred_date?: string | null
+          questions?: string[]
+          research_topic?: string
+          researcher_feedback?: string | null
+          researcher_id?: string
+          researcher_rating?: number | null
+          scheduled_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_requests_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interview_requests_researcher_id_fkey"
+            columns: ["researcher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           bio: string | null

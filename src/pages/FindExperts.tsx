@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import RequestInterviewDialog from "@/components/RequestInterviewDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -267,6 +268,8 @@ const mockExperts = [
 const FindExperts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
+  const [selectedExpert, setSelectedExpert] = useState<any>(null);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
 
   const allExpertiseFields = Array.from(
     new Set(mockExperts.flatMap(expert => expert.expertise))
@@ -286,6 +289,11 @@ const FindExperts = () => {
     
     return matchesSearch && matchesFilter;
   });
+
+  const handleConnectExpert = (expert: any) => {
+    setSelectedExpert(expert);
+    setRequestDialogOpen(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -409,7 +417,10 @@ const FindExperts = () => {
               </CardContent>
               
               <CardFooter>
-                <Button className="w-full">
+                <Button 
+                  className="w-full"
+                  onClick={() => handleConnectExpert(expert)}
+                >
                   Connect for $1.50
                 </Button>
               </CardFooter>
@@ -417,6 +428,16 @@ const FindExperts = () => {
           ))}
         </div>
       </div>
+      
+      {/* Interview Request Dialog */}
+      {selectedExpert && (
+        <RequestInterviewDialog
+          open={requestDialogOpen}
+          onOpenChange={setRequestDialogOpen}
+          expertName={selectedExpert.name}
+          expertId={selectedExpert.id.toString()}
+        />
+      )}
       
       <Footer />
     </div>
