@@ -34,7 +34,7 @@ const ExpertDashboard = () => {
       researcherName: "John Smith",
       researchTopic: "Impact of climate change on coastal ecosystems",
       requestedDate: "2025-11-10",
-      duration: "45 minutes",
+      duration: "10 minutes",
       status: "pending"
     },
     {
@@ -42,7 +42,7 @@ const ExpertDashboard = () => {
       researcherName: "Emily Chen",
       researchTopic: "Renewable energy policy frameworks",
       requestedDate: "2025-11-12",
-      duration: "60 minutes",
+      duration: "8 minutes",
       status: "pending"
     }
   ];
@@ -55,7 +55,7 @@ const ExpertDashboard = () => {
       researchTopic: "Carbon capture technologies",
       scheduledDate: "2025-11-08",
       time: "14:00",
-      duration: "30 minutes",
+      duration: "10 minutes",
       status: "confirmed"
     }
   ];
@@ -67,7 +67,7 @@ const ExpertDashboard = () => {
       researcherName: "Maria Garcia",
       researchTopic: "Environmental sustainability in urban planning",
       completedDate: "2025-10-28",
-      duration: "45 minutes",
+      duration: "10 minutes",
       rating: 5
     },
     {
@@ -75,7 +75,7 @@ const ExpertDashboard = () => {
       researcherName: "Alex Johnson",
       researchTopic: "Climate policy implementation challenges",
       completedDate: "2025-10-22",
-      duration: "60 minutes",
+      duration: "7 minutes",
       rating: 5
     }
   ];
