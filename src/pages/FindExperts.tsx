@@ -421,7 +421,7 @@ const FindExperts = () => {
                   className="w-full"
                   onClick={() => handleConnectExpert(expert)}
                 >
-                  Connect for $1.50
+                  Connect
                 </Button>
               </CardFooter>
             </Card>
