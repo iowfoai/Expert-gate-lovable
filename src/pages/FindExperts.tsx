@@ -275,6 +275,10 @@ const FindExperts = () => {
     new Set(mockExperts.flatMap(expert => expert.expertise))
   ).sort();
 
+  const allCountries = Array.from(
+    new Set(mockExperts.map(expert => expert.country))
+  ).sort();
+
   const filteredExperts = mockExperts.filter(expert => {
     const matchesSearch = searchQuery === "" || 
       expert.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -285,7 +289,8 @@ const FindExperts = () => {
       selectedFilter === "all" ||
       (selectedFilter === "available" && expert.available) ||
       (selectedFilter === "top-rated" && expert.rating >= 4.8) ||
-      expert.expertise.includes(selectedFilter);
+      expert.expertise.includes(selectedFilter) ||
+      expert.country === selectedFilter;
     
     return matchesSearch && matchesFilter;
   });
@@ -324,38 +329,65 @@ const FindExperts = () => {
         </div>
         
         {/* Filters */}
-        <div className="mb-8 flex gap-3 flex-wrap">
-          <Button 
-            variant={selectedFilter === "all" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setSelectedFilter("all")}
-          >
-            All Fields
-          </Button>
-          <Button 
-            variant={selectedFilter === "available" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setSelectedFilter("available")}
-          >
-            Available Now
-          </Button>
-          <Button 
-            variant={selectedFilter === "top-rated" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setSelectedFilter("top-rated")}
-          >
-            Top Rated
-          </Button>
-          {allExpertiseFields.slice(0, 8).map((field) => (
-            <Button
-              key={field}
-              variant={selectedFilter === field ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedFilter(field)}
-            >
-              {field}
-            </Button>
-          ))}
+        <div className="mb-8 space-y-4">
+          <div>
+            <h3 className="text-sm font-medium mb-3">General Filters</h3>
+            <div className="flex gap-3 flex-wrap">
+              <Button 
+                variant={selectedFilter === "all" ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setSelectedFilter("all")}
+              >
+                All Fields
+              </Button>
+              <Button 
+                variant={selectedFilter === "available" ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setSelectedFilter("available")}
+              >
+                Available Now
+              </Button>
+              <Button 
+                variant={selectedFilter === "top-rated" ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setSelectedFilter("top-rated")}
+              >
+                Top Rated
+              </Button>
+            </div>
+          </div>
+          
+          <div>
+            <h3 className="text-sm font-medium mb-3">Expertise</h3>
+            <div className="flex gap-3 flex-wrap">
+              {allExpertiseFields.slice(0, 8).map((field) => (
+                <Button
+                  key={field}
+                  variant={selectedFilter === field ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedFilter(field)}
+                >
+                  {field}
+                </Button>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <h3 className="text-sm font-medium mb-3">Country</h3>
+            <div className="flex gap-3 flex-wrap">
+              {allCountries.map((country) => (
+                <Button
+                  key={country}
+                  variant={selectedFilter === country ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedFilter(country)}
+                >
+                  {country}
+                </Button>
+              ))}
+            </div>
+          </div>
         </div>
         
         {/* Expert Cards */}
