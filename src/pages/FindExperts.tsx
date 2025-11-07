@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Star, MapPin, Calendar } from "lucide-react";
 
 const mockExperts = [
@@ -268,6 +269,8 @@ const mockExperts = [
 const FindExperts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
+  const [selectedExpertise, setSelectedExpertise] = useState<string>("all");
+  const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [selectedExpert, setSelectedExpert] = useState<any>(null);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
 
@@ -285,14 +288,20 @@ const FindExperts = () => {
       expert.institution.toLowerCase().includes(searchQuery.toLowerCase()) ||
       expert.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    const matchesFilter = 
+    const matchesGeneralFilter = 
       selectedFilter === "all" ||
       (selectedFilter === "available" && expert.available) ||
-      (selectedFilter === "top-rated" && expert.rating >= 4.8) ||
-      expert.expertise.includes(selectedFilter) ||
-      expert.country === selectedFilter;
+      (selectedFilter === "top-rated" && expert.rating >= 4.8);
     
-    return matchesSearch && matchesFilter;
+    const matchesExpertise = 
+      selectedExpertise === "all" ||
+      expert.expertise.includes(selectedExpertise);
+    
+    const matchesCountry = 
+      selectedCountry === "all" ||
+      expert.country === selectedCountry;
+    
+    return matchesSearch && matchesGeneralFilter && matchesExpertise && matchesCountry;
   });
 
   const handleConnectExpert = (expert: any) => {
@@ -357,35 +366,39 @@ const FindExperts = () => {
             </div>
           </div>
           
-          <div>
-            <h3 className="text-sm font-medium mb-3">Expertise</h3>
-            <div className="flex gap-3 flex-wrap">
-              {allExpertiseFields.slice(0, 8).map((field) => (
-                <Button
-                  key={field}
-                  variant={selectedFilter === field ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedFilter(field)}
-                >
-                  {field}
-                </Button>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-sm font-medium mb-3">Expertise</h3>
+              <Select value={selectedExpertise} onValueChange={setSelectedExpertise}>
+                <SelectTrigger className="w-full bg-background">
+                  <SelectValue placeholder="All Expertise" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="all">All Expertise</SelectItem>
+                  {allExpertiseFields.map((field) => (
+                    <SelectItem key={field} value={field}>
+                      {field}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
-          
-          <div>
-            <h3 className="text-sm font-medium mb-3">Country</h3>
-            <div className="flex gap-3 flex-wrap">
-              {allCountries.map((country) => (
-                <Button
-                  key={country}
-                  variant={selectedFilter === country ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedFilter(country)}
-                >
-                  {country}
-                </Button>
-              ))}
+            
+            <div>
+              <h3 className="text-sm font-medium mb-3">Country</h3>
+              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                <SelectTrigger className="w-full bg-background">
+                  <SelectValue placeholder="All Countries" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="all">All Countries</SelectItem>
+                  {allCountries.map((country) => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
