@@ -14,7 +14,7 @@ const Index = () => {
     const { data, error } = await supabase
       .from('profiles')
       .insert({
-        id: 'test-id',
+        id: '11111111-1111-1111-1111-111111111111',  // valid uuid
         email: 'test@connection.com',
         full_name: 'Test User',
         user_type: 'researcher',
