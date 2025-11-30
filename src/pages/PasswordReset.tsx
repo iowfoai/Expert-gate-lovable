@@ -7,6 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Network } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const passwordSchema = z.object({
+  password: z.string()
+    .min(6, "Password must be at least 6 characters")
+    .max(72, "Password must be less than 72 characters"),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
 const PasswordReset = () => {
   const navigate = useNavigate();
@@ -37,19 +48,17 @@ const PasswordReset = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Validate input
+    const validationResult = passwordSchema.safeParse({
+      password: newPassword,
+      confirmPassword: confirmPassword,
+    });
 
-    if (newPassword.length < 6) {
+    if (!validationResult.success) {
+      const errorMessage = validationResult.error.errors[0]?.message || "Invalid input";
       toast({
-        title: "Error",
-        description: "Password must be at least 6 characters",
+        title: "Validation Error",
+        description: errorMessage,
         variant: "destructive",
       });
       return;
@@ -69,7 +78,7 @@ const PasswordReset = () => {
         description: "Password updated successfully! You can now sign in with your new password.",
       });
       
-      navigate("/auth");
+      navigate("/auth?mode=signin");
     } catch (error: any) {
       toast({
         title: "Error",
