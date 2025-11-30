@@ -12,6 +12,9 @@ import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import PasswordReset from "./pages/PasswordReset";
+import Profile from "./pages/Profile";
+import AccountSettings from "./pages/AccountSettings";
+import InterviewHistory from "./pages/InterviewHistory";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +30,9 @@ const App = () => (
           <Route path="/reset-password" element={<PasswordReset />} />
           <Route path="/find-experts" element={<FindExperts />} />
           <Route path="/expert-dashboard" element={<ExpertDashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/account-settings" element={<AccountSettings />} />
+          <Route path="/interview-history" element={<InterviewHistory />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
