@@ -4,53 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Search, Calendar, Shield, Star, Users, CheckCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
-  const { toast } = useToast();
-
-  const handleTestInsert = async () => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .insert({
-        id: '11111111-1111-1111-1111-111111111111',  // valid uuid
-        email: 'test@connection.com',
-        full_name: 'Test User',
-        user_type: 'researcher',
-      });
-
-    console.log('TEST INSERT result', { data, error });
-
-    if (error) {
-      toast({
-        title: "Insert error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Inserted test row into profiles",
-      });
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
-      
-      {/* Temporary Test Button */}
-      <div className="fixed top-20 right-4 z-50">
-        <Button 
-          onClick={handleTestInsert}
-          variant="outline"
-          size="sm"
-          className="bg-yellow-500/10 border-yellow-500 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-500/20"
-        >
-          🧪 Test DB Insert
-        </Button>
-      </div>
       
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 md:py-32">
