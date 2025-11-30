@@ -11,6 +11,7 @@ import About from "./pages/About";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import PasswordReset from "./pages/PasswordReset";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/password-reset" element={<PasswordReset />} />
           <Route path="/find-experts" element={<FindExperts />} />
           <Route path="/expert-dashboard" element={<ExpertDashboard />} />
           <Route path="/about" element={<About />} />

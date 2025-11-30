@@ -425,6 +425,14 @@ const Auth = () => {
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Loading..." : mode === "signup" ? "Create Account" : "Sign In"}
               </Button>
+              
+              {mode === "signin" && (
+                <div className="text-center">
+                  <Link to="/password-reset" className="text-sm text-accent hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+              )}
             </form>
           </CardContent>
           
