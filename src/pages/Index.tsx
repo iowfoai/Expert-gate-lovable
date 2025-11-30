@@ -20,11 +20,13 @@ const Index = () => {
             Find and interview verified experts for your research projects. Ethical, efficient, and professional — bridging the gap between knowledge seekers and knowledge holders.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/auth?mode=signup">
-              <Button size="lg" className="w-full sm:w-auto">
-                Get Started Free
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="w-full sm:w-auto"
+              onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Get Started Free
+            </Button>
             <Link to="/find-experts">
               <Button size="lg" variant="outline" className="w-full sm:w-auto">
                 Browse Experts
@@ -161,6 +163,139 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section id="pricing" className="container mx-auto px-4 py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Choose Your Plan</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Start for free and scale as you grow
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Researcher Plan */}
+          <Card className="border-2 hover:border-accent transition-colors">
+            <CardContent className="pt-6">
+              <div className="mb-6">
+                <Users className="w-12 h-12 text-accent mb-4" />
+                <h3 className="text-2xl font-bold mb-2">Researcher</h3>
+                <div className="text-3xl font-bold mb-4">Free</div>
+                <p className="text-muted-foreground">
+                  Perfect for individual researchers looking to connect with experts
+                </p>
+              </div>
+              
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>Access to verified experts</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>Smart search & filters</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>$1.50 platform fee per interview</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>Interview history & ratings</span>
+                </li>
+              </ul>
+
+              <Link to="/auth?mode=signup" className="block">
+                <Button className="w-full" size="lg">
+                  Get Started
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Expert Plan */}
+          <Card className="border-2 hover:border-accent transition-colors">
+            <CardContent className="pt-6">
+              <div className="mb-6">
+                <Star className="w-12 h-12 text-accent mb-4" />
+                <h3 className="text-2xl font-bold mb-2">Expert</h3>
+                <div className="text-3xl font-bold mb-4">Free</div>
+                <p className="text-muted-foreground">
+                  For professionals sharing their expertise with researchers
+                </p>
+              </div>
+              
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>Create expert profile</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>Manage interview requests</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>No commission fees</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>Build your reputation</span>
+                </li>
+              </ul>
+
+              <Link to="/auth?mode=signup" className="block">
+                <Button className="w-full" size="lg">
+                  Get Started
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* University Plan */}
+          <Card className="border-2 border-accent hover:border-accent/80 transition-colors bg-accent/5">
+            <CardContent className="pt-6">
+              <div className="mb-6">
+                <Shield className="w-12 h-12 text-accent mb-4" />
+                <h3 className="text-2xl font-bold mb-2">University</h3>
+                <div className="text-3xl font-bold mb-4">$40<span className="text-lg font-normal">/month</span></div>
+                <p className="text-muted-foreground">
+                  For institutions providing access to all researchers
+                </p>
+              </div>
+              
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>Unlimited researchers</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>All researchers use app for free</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>No commission fees per interview</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>Priority support</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <span>Usage analytics</span>
+                </li>
+              </ul>
+
+              <Link to="/university-plan" className="block">
+                <Button className="w-full" size="lg" variant="default">
+                  Learn More
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-3xl mx-auto text-center bg-accent/5 rounded-2xl p-12 border border-accent/20">
@@ -168,11 +303,12 @@ const Index = () => {
           <p className="text-muted-foreground mb-8">
             Join thousands of researchers connecting with verified experts today
           </p>
-          <Link to="/auth?mode=signup">
-            <Button size="lg">
-              Create Free Account
-            </Button>
-          </Link>
+          <Button 
+            size="lg"
+            onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            View Plans
+          </Button>
         </div>
       </section>
 

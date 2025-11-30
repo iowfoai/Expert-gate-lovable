@@ -14,6 +14,7 @@ import PasswordReset from "./pages/PasswordReset";
 import Profile from "./pages/Profile";
 import AccountSettings from "./pages/AccountSettings";
 import InterviewHistory from "./pages/InterviewHistory";
+import UniversityPlan from "./pages/UniversityPlan";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
         <Route path="/about" element={<About />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/university-plan" element={<UniversityPlan />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
