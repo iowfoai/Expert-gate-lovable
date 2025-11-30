@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      deleted_accounts: {
+        Row: {
+          deleted_at: string
+          deletion_reason: string | null
+          email: string
+          full_name: string | null
+          id: string
+          user_id: string
+          user_type: Database["public"]["Enums"]["user_type"] | null
+        }
+        Insert: {
+          deleted_at?: string
+          deletion_reason?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          user_id: string
+          user_type?: Database["public"]["Enums"]["user_type"] | null
+        }
+        Update: {
+          deleted_at?: string
+          deletion_reason?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          user_id?: string
+          user_type?: Database["public"]["Enums"]["user_type"] | null
+        }
+        Relationships: []
+      }
       interview_requests: {
         Row: {
           completed_at: string | null
