@@ -149,8 +149,7 @@ const Auth = () => {
 
         const { error: profileError } = await supabase
           .from('profiles')
-          .update(profileData)
-          .eq('id', data.user.id);
+          .upsert(profileData, { onConflict: 'id' });
 
         if (profileError) {
           console.error('Profile update error:', profileError);
