@@ -11,23 +11,27 @@ const Index = () => {
   const { toast } = useToast();
 
   const handleTestInsert = async () => {
-    try {
-      await supabase.from('profiles').insert({ 
-        id: 'test-id', 
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert({
+        id: 'test-id',
         email: 'test@connection.com',
         full_name: 'Test User',
-        user_type: 'researcher'
+        user_type: 'researcher',
       });
-      
+
+    console.log('TEST INSERT result', { data, error });
+
+    if (error) {
+      toast({
+        title: "Insert error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
       toast({
         title: "Success",
-        description: "Inserted test row",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to insert test row",
-        variant: "destructive",
+        description: "Inserted test row into profiles",
       });
     }
   };
