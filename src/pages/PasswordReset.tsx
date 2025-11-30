@@ -78,7 +78,8 @@ const PasswordReset = () => {
         description: "Password updated successfully! You can now sign in with your new password.",
       });
       
-      navigate("/auth?mode=signin");
+      // Clean up the URL hash and redirect
+      window.location.href = "/auth?mode=signin";
     } catch (error: any) {
       toast({
         title: "Error",
