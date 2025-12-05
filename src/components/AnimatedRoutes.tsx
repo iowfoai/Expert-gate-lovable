@@ -8,6 +8,7 @@ import FindExperts from "@/pages/FindExperts";
 import ExpertDashboard from "@/pages/ExpertDashboard";
 import ExpertHome from "@/pages/ExpertHome";
 import ExpertsDirectory from "@/pages/ExpertsDirectory";
+import Connections from "@/pages/Connections";
 import About from "@/pages/About";
 import FAQ from "@/pages/FAQ";
 import Contact from "@/pages/Contact";
@@ -31,6 +32,7 @@ const AnimatedRoutes = () => {
         <Route path="/expert-dashboard" element={<PageTransition><ExpertDashboard /></PageTransition>} />
         <Route path="/expert-home" element={<PageTransition><ExpertHome /></PageTransition>} />
         <Route path="/experts-directory" element={<PageTransition><ExpertsDirectory /></PageTransition>} />
+        <Route path="/connections" element={<PageTransition><Connections /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
         <Route path="/account-settings" element={<PageTransition><AccountSettings /></PageTransition>} />
         <Route path="/interview-history" element={<PageTransition><InterviewHistory /></PageTransition>} />
