@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
@@ -8,53 +8,19 @@ import { Search, Calendar, Shield, Star, Users, CheckCircle } from "lucide-react
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuthAndRedirect = async (userId: string) => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('user_type')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (profile?.user_type === 'expert') {
-        navigate('/expert-home');
-      }
-      setIsLoading(false);
-    };
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session);
-      if (session?.user) {
-        checkAuthAndRedirect(session.user.id);
-      } else {
-        setIsLoading(false);
-      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session);
-      if (session?.user) {
-        checkAuthAndRedirect(session.user.id);
-      } else {
-        setIsLoading(false);
-      }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  // Show minimal loading while checking auth - prevents flash of content
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-      </div>
-    );
-  }
+  }, []);
 
   // Show nothing for auth-dependent sections until we know auth state
   const showGuestContent = isLoggedIn === false;
