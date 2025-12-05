@@ -5,109 +5,230 @@ import InterviewRequestDialog from "@/components/InterviewRequestDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Star, Users, Clock, CheckCircle, XCircle, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Profile {
+  id: string;
+  full_name: string;
+  bio: string | null;
+  institution: string | null;
+  field_of_expertise: string[] | null;
+  education_level: string | null;
+  years_of_experience: number | null;
+  profile_image_url: string | null;
+  is_available: boolean | null;
+  interviews_remaining: number | null;
+  monthly_interview_limit: number | null;
+}
+
+interface InterviewRequest {
+  id: string;
+  researcher_id: string;
+  research_topic: string;
+  description: string;
+  questions: string[];
+  preferred_date: string | null;
+  duration_minutes: number;
+  status: string;
+  scheduled_date: string | null;
+  completed_at: string | null;
+  researcher_rating: number | null;
+  researcher_feedback: string | null;
+  created_at: string;
+  researcher?: {
+    full_name: string;
+    research_institution: string | null;
+  };
+}
 
 const ExpertDashboard = () => {
   const navigate = useNavigate();
-  const { isLoading } = useUserTypeGuard(['expert']);
+  const { toast } = useToast();
+  const { isLoading: authLoading, userId } = useUserTypeGuard(['expert']);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isAvailable, setIsAvailable] = useState(true);
+  const [pendingRequests, setPendingRequests] = useState<InterviewRequest[]>([]);
+  const [upcomingInterviews, setUpcomingInterviews] = useState<InterviewRequest[]>([]);
+  const [pastInterviews, setPastInterviews] = useState<InterviewRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Mock expert data
-  const expertProfile = {
-    name: "Dr. Sarah Mitchell",
-    title: "Professor of Climate Science",
-    institution: "MIT",
-    expertise: ["Climate Change", "Environmental Policy", "Sustainability"],
-    rating: 4.9,
-    totalInterviews: 28,
-    interviewsRemaining: 3,
-    monthlyLimit: 5
+  useEffect(() => {
+    if (authLoading || !userId) return;
+    
+    const fetchData = async () => {
+      // Fetch profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profileData) {
+        setProfile(profileData as Profile);
+        setIsAvailable(profileData.is_available ?? true);
+      }
+
+      // Fetch all interview requests for this expert
+      const { data: requests } = await supabase
+        .from('interview_requests')
+        .select('*')
+        .eq('expert_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (requests) {
+        // Get researcher info for each request
+        const researcherIds = [...new Set(requests.map(r => r.researcher_id))];
+        const { data: researchers } = await supabase
+          .from('profiles')
+          .select('id, full_name, research_institution')
+          .in('id', researcherIds);
+
+        const requestsWithResearchers = requests.map(req => ({
+          ...req,
+          researcher: researchers?.find(r => r.id === req.researcher_id)
+        }));
+
+        // Categorize requests
+        setPendingRequests(requestsWithResearchers.filter(r => r.status === 'pending'));
+        setUpcomingInterviews(requestsWithResearchers.filter(r => r.status === 'accepted' && !r.completed_at));
+        setPastInterviews(requestsWithResearchers.filter(r => r.status === 'completed' || r.completed_at));
+      }
+
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [authLoading, userId]);
+
+  const handleAvailabilityChange = async (available: boolean) => {
+    setIsAvailable(available);
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_available: available })
+      .eq('id', userId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update availability",
+        variant: "destructive"
+      });
+      setIsAvailable(!available);
+    } else {
+      toast({
+        title: available ? "You're now available" : "You're now unavailable",
+        description: available 
+          ? "Researchers can send you interview requests" 
+          : "You won't receive new interview requests"
+      });
+    }
   };
 
-  // Mock pending requests
-  const pendingRequests = [
-    {
-      id: 1,
-      researcherName: "John Smith",
-      researchTopic: "Impact of climate change on coastal ecosystems",
-      description: "I am conducting research on how rising sea levels and ocean acidification are affecting marine biodiversity in coastal regions. I would like to understand the latest findings in climate science and potential mitigation strategies.",
-      questions: [
-        "What are the most significant impacts of ocean acidification on marine life?",
-        "How do current climate models predict sea level rise over the next 50 years?",
-        "What are the most effective policy interventions for coastal protection?"
-      ],
-      requestedDate: "2025-11-10",
-      duration: "10 minutes",
-      status: "pending"
-    },
-    {
-      id: 2,
-      researcherName: "Emily Chen",
-      researchTopic: "Renewable energy policy frameworks",
-      description: "My thesis explores comparative renewable energy policies across different countries. I'm particularly interested in understanding how policy design influences adoption rates and technological innovation.",
-      questions: [
-        "What are key differences between carbon tax and cap-and-trade systems?",
-        "How do renewable energy subsidies impact grid stability?",
-        "Which countries have the most effective renewable energy transition policies?"
-      ],
-      requestedDate: "2025-11-12",
-      duration: "8 minutes",
-      status: "pending"
-    }
-  ];
+  const handleAcceptRequest = async (requestId: string) => {
+    const { error } = await supabase
+      .from('interview_requests')
+      .update({ status: 'accepted' })
+      .eq('id', requestId);
 
-  // Mock upcoming interviews
-  const upcomingInterviews = [
-    {
-      id: 3,
-      researcherName: "David Brown",
-      researchTopic: "Carbon capture technologies",
-      scheduledDate: "2025-11-08",
-      time: "14:00",
-      duration: "10 minutes",
-      status: "confirmed"
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to accept request",
+        variant: "destructive"
+      });
+    } else {
+      const accepted = pendingRequests.find(r => r.id === requestId);
+      if (accepted) {
+        setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+        setUpcomingInterviews(prev => [...prev, { ...accepted, status: 'accepted' }]);
+      }
+      toast({
+        title: "Request Accepted",
+        description: "The researcher will be notified"
+      });
     }
-  ];
+  };
 
-  // Mock past interviews
-  const pastInterviews = [
-    {
-      id: 4,
-      researcherName: "Maria Garcia",
-      researchTopic: "Environmental sustainability in urban planning",
-      completedDate: "2025-10-28",
-      duration: "10 minutes",
-      rating: 5
-    },
-    {
-      id: 5,
-      researcherName: "Alex Johnson",
-      researchTopic: "Climate policy implementation challenges",
-      completedDate: "2025-10-22",
-      duration: "7 minutes",
-      rating: 5
+  const handleDeclineRequest = async (requestId: string) => {
+    const { error } = await supabase
+      .from('interview_requests')
+      .update({ status: 'declined' })
+      .eq('id', requestId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to decline request",
+        variant: "destructive"
+      });
+    } else {
+      setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+      toast({
+        title: "Request Declined",
+        description: "The researcher will be notified"
+      });
     }
-  ];
+  };
 
-  const handleViewDetails = (request: any) => {
-    setSelectedRequest(request);
+  const handleViewDetails = (request: InterviewRequest) => {
+    setSelectedRequest({
+      researcherName: request.researcher?.full_name || 'Unknown',
+      researchTopic: request.research_topic,
+      description: request.description,
+      questions: request.questions,
+      requestedDate: request.preferred_date,
+      duration: `${request.duration_minutes} minutes`
+    });
     setDetailsDialogOpen(true);
   };
 
-  if (isLoading) {
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const getEducationLabel = (level: string | null) => {
+    const labels: Record<string, string> = {
+      bachelors: "Bachelor's",
+      masters: "Master's",
+      phd: "PhD",
+      postdoc: "Postdoctoral",
+      professor: "Professor",
+      industry_professional: "Industry Professional"
+    };
+    return level ? labels[level] || level : '';
+  };
+
+  const totalInterviews = pastInterviews.length;
+
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navigation />
         <main className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <main className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">Profile not found</p>
         </main>
         <Footer />
       </div>
@@ -142,26 +263,33 @@ const ExpertDashboard = () => {
           <CardContent>
             <div className="flex items-start gap-6">
               <Avatar className="w-20 h-20">
+                <AvatarImage src={profile.profile_image_url || undefined} />
                 <AvatarFallback className="bg-accent/10 text-accent font-semibold text-2xl">
-                  {expertProfile.name.split(' ').map(n => n[0]).join('')}
+                  {getInitials(profile.full_name)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h3 className="text-2xl font-semibold mb-1">{expertProfile.name}</h3>
-                <p className="text-muted-foreground mb-1">{expertProfile.title}</p>
-                <p className="text-sm text-muted-foreground mb-3">{expertProfile.institution}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {expertProfile.expertise.map((skill) => (
-                    <Badge key={skill} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
+                <h3 className="text-2xl font-semibold mb-1">{profile.full_name}</h3>
+                {profile.education_level && (
+                  <p className="text-muted-foreground mb-1">{getEducationLabel(profile.education_level)}</p>
+                )}
+                {profile.institution && (
+                  <p className="text-sm text-muted-foreground mb-3">{profile.institution}</p>
+                )}
+                {profile.field_of_expertise && profile.field_of_expertise.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {profile.field_of_expertise.map((skill) => (
+                      <Badge key={skill} variant="secondary">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <Switch 
                     id="availability" 
                     checked={isAvailable}
-                    onCheckedChange={setIsAvailable}
+                    onCheckedChange={handleAvailabilityChange}
                   />
                   <Label htmlFor="availability" className="cursor-pointer">
                     {isAvailable ? "Available for interviews" : "Not available"}
@@ -178,24 +306,10 @@ const ExpertDashboard = () => {
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                  <Star className="w-5 h-5 text-accent" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold">{expertProfile.rating}</div>
-                  <div className="text-sm text-muted-foreground">Rating</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
                   <Users className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{expertProfile.totalInterviews}</div>
+                  <div className="text-2xl font-bold">{totalInterviews}</div>
                   <div className="text-sm text-muted-foreground">Total Interviews</div>
                 </div>
               </div>
@@ -209,8 +323,8 @@ const ExpertDashboard = () => {
                   <Clock className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{expertProfile.interviewsRemaining}</div>
-                  <div className="text-sm text-muted-foreground">This Month</div>
+                  <div className="text-2xl font-bold">{profile.interviews_remaining ?? 5}</div>
+                  <div className="text-sm text-muted-foreground">Remaining This Month</div>
                 </div>
               </div>
             </CardContent>
@@ -229,13 +343,31 @@ const ExpertDashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{upcomingInterviews.length}</div>
+                  <div className="text-sm text-muted-foreground">Upcoming</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="requests" className="mb-8">
           <TabsList className="mb-6">
-            <TabsTrigger value="requests">Pending Requests</TabsTrigger>
-            <TabsTrigger value="upcoming">Upcoming Interviews</TabsTrigger>
+            <TabsTrigger value="requests">
+              Pending Requests {pendingRequests.length > 0 && `(${pendingRequests.length})`}
+            </TabsTrigger>
+            <TabsTrigger value="upcoming">
+              Upcoming {upcomingInterviews.length > 0 && `(${upcomingInterviews.length})`}
+            </TabsTrigger>
             <TabsTrigger value="past">Past Interviews</TabsTrigger>
           </TabsList>
 
@@ -251,20 +383,24 @@ const ExpertDashboard = () => {
                 pendingRequests.map((request) => (
                   <Card key={request.id}>
                     <CardContent className="pt-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1">{request.researcherName}</h3>
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div className="flex-1 min-w-[200px]">
+                          <h3 className="font-semibold text-lg mb-1">
+                            {request.researcher?.full_name || 'Unknown Researcher'}
+                          </h3>
                           <p className="text-sm text-muted-foreground mb-2">
-                            Research Topic: {request.researchTopic}
+                            Research Topic: {request.research_topic}
                           </p>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              {request.requestedDate}
-                            </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                            {request.preferred_date && (
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                {new Date(request.preferred_date).toLocaleDateString()}
+                              </div>
+                            )}
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
-                              {request.duration}
+                              {request.duration_minutes} minutes
                             </div>
                           </div>
                         </div>
@@ -275,14 +411,22 @@ const ExpertDashboard = () => {
                             onClick={() => handleViewDetails(request)}
                           >
                             <FileText className="w-4 h-4 mr-1" />
-                            See Interview Details
+                            See Details
                           </Button>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="default">
+                            <Button 
+                              size="sm" 
+                              variant="default"
+                              onClick={() => handleAcceptRequest(request.id)}
+                            >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Accept
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleDeclineRequest(request.id)}
+                            >
                               <XCircle className="w-4 h-4 mr-1" />
                               Decline
                             </Button>
@@ -308,33 +452,29 @@ const ExpertDashboard = () => {
                 upcomingInterviews.map((interview) => (
                   <Card key={interview.id}>
                     <CardContent className="pt-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1">{interview.researcherName}</h3>
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div className="flex-1 min-w-[200px]">
+                          <h3 className="font-semibold text-lg mb-1">
+                            {interview.researcher?.full_name || 'Unknown Researcher'}
+                          </h3>
                           <p className="text-sm text-muted-foreground mb-2">
-                            Research Topic: {interview.researchTopic}
+                            Research Topic: {interview.research_topic}
                           </p>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              {interview.scheduledDate} at {interview.time}
-                            </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                            {interview.scheduled_date && (
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                {new Date(interview.scheduled_date).toLocaleString()}
+                              </div>
+                            )}
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
-                              {interview.duration}
+                              {interview.duration_minutes} minutes
                             </div>
                           </div>
                           <Badge variant="secondary" className="mt-2">
-                            {interview.status}
+                            Confirmed
                           </Badge>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
-                            Reschedule
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            Cancel
-                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -356,26 +496,37 @@ const ExpertDashboard = () => {
                 pastInterviews.map((interview) => (
                   <Card key={interview.id}>
                     <CardContent className="pt-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1">{interview.researcherName}</h3>
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div className="flex-1 min-w-[200px]">
+                          <h3 className="font-semibold text-lg mb-1">
+                            {interview.researcher?.full_name || 'Unknown Researcher'}
+                          </h3>
                           <p className="text-sm text-muted-foreground mb-2">
-                            Research Topic: {interview.researchTopic}
+                            Research Topic: {interview.research_topic}
                           </p>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              {interview.completedDate}
-                            </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                            {interview.completed_at && (
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                {new Date(interview.completed_at).toLocaleDateString()}
+                              </div>
+                            )}
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
-                              {interview.duration}
+                              {interview.duration_minutes} minutes
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Star className="w-4 h-4 fill-gold text-gold" />
-                              {interview.rating}
-                            </div>
+                            {interview.researcher_rating && (
+                              <div className="flex items-center gap-1">
+                                <Star className="w-4 h-4 fill-gold text-gold" />
+                                {interview.researcher_rating}
+                              </div>
+                            )}
                           </div>
+                          {interview.researcher_feedback && (
+                            <p className="mt-2 text-sm italic text-muted-foreground">
+                              "{interview.researcher_feedback}"
+                            </p>
+                          )}
                         </div>
                       </div>
                     </CardContent>
