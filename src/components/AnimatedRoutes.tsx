@@ -2,7 +2,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "./PageTransition";
 
-import Index from "@/pages/Index";
+import HomeRouter from "@/components/HomeRouter";
 import Auth from "@/pages/Auth";
 import FindExperts from "@/pages/FindExperts";
 import ExpertDashboard from "@/pages/ExpertDashboard";
@@ -24,7 +24,7 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+        <Route path="/" element={<HomeRouter />} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/reset-password" element={<PageTransition><PasswordReset /></PageTransition>} />
         <Route path="/find-experts" element={<PageTransition><FindExperts /></PageTransition>} />
