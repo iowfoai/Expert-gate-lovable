@@ -10,6 +10,7 @@ import { Network, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { countries } from "@/lib/countries";
+import { universities } from "@/lib/universities";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -338,14 +339,21 @@ const Auth = () => {
                           
                           <div className="space-y-2">
                             <Label htmlFor="institution">Institution/Organization *</Label>
-                            <Input 
-                              id="institution" 
-                              type="text" 
-                              placeholder="MIT, Stanford, etc."
-                              value={institution}
-                              onChange={(e) => setInstitution(e.target.value)}
-                              required={userType === "expert"}
-                            />
+                            <Select value={institution} onValueChange={setInstitution}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select your institution" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-[300px]">
+                                {universities.map((uni) => (
+                                  <SelectItem key={uni} value={uni}>
+                                    {uni}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">
+                              If your institution is not listed, select "Other" and specify in your bio.
+                            </p>
                           </div>
                           
                           <div className="space-y-2">
