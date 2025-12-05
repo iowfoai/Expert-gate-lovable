@@ -9,6 +9,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
 import { Search, UserPlus, Check, Clock, Users, GraduationCap, Building2 } from "lucide-react";
 
 interface Expert {
@@ -30,30 +31,24 @@ interface ConnectionStatus {
 const ExpertsDirectory = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isLoading: authLoading, userId: currentUserId } = useUserTypeGuard(['expert']);
   const [experts, setExperts] = useState<Expert[]>([]);
   const [filteredExperts, setFilteredExperts] = useState<Expert[]>([]);
   const [connectionStatuses, setConnectionStatuses] = useState<ConnectionStatus>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading || !currentUserId) return;
+    
     const fetchData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate('/auth');
-        return;
-      }
-
-      setCurrentUserId(session.user.id);
 
       // Fetch all verified experts except current user
       const { data: expertsData, error } = await supabase
         .from('profiles')
         .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country')
         .eq('user_type', 'expert')
-        .neq('id', session.user.id);
+        .neq('id', currentUserId);
 
       if (error) {
         console.error('Error fetching experts:', error);
@@ -67,15 +62,15 @@ const ExpertsDirectory = () => {
       const { data: connections } = await supabase
         .from('expert_connections')
         .select('requester_id, recipient_id, status')
-        .or(`requester_id.eq.${session.user.id},recipient_id.eq.${session.user.id}`);
+        .or(`requester_id.eq.${currentUserId},recipient_id.eq.${currentUserId}`);
 
       const statuses: ConnectionStatus = {};
       connections?.forEach(conn => {
-        const otherUserId = conn.requester_id === session.user.id ? conn.recipient_id : conn.requester_id;
+        const otherUserId = conn.requester_id === currentUserId ? conn.recipient_id : conn.requester_id;
         if (conn.status === 'accepted') {
           statuses[otherUserId] = 'accepted';
         } else if (conn.status === 'pending') {
-          statuses[otherUserId] = conn.requester_id === session.user.id ? 'pending_sent' : 'pending_received';
+          statuses[otherUserId] = conn.requester_id === currentUserId ? 'pending_sent' : 'pending_received';
         }
       });
       setConnectionStatuses(statuses);
@@ -83,7 +78,7 @@ const ExpertsDirectory = () => {
     };
 
     fetchData();
-  }, [navigate]);
+  }, [authLoading, currentUserId]);
 
   useEffect(() => {
     const filtered = experts.filter(expert => {
@@ -172,7 +167,7 @@ const ExpertsDirectory = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navigation />

@@ -11,9 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Star, Users, Clock, CheckCircle, XCircle, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
 
 const ExpertDashboard = () => {
   const navigate = useNavigate();
+  const { isLoading } = useUserTypeGuard(['expert']);
   const [isAvailable, setIsAvailable] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
@@ -100,6 +102,18 @@ const ExpertDashboard = () => {
     setDetailsDialogOpen(true);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
@@ -109,10 +123,10 @@ const ExpertDashboard = () => {
         <div className="mb-8">
           <Button 
             variant="outline" 
-            onClick={() => navigate("/find-experts")}
+            onClick={() => navigate("/expert-home")}
             className="mb-4"
           >
-            ← Back to Browse Experts
+            ← Back to Home
           </Button>
           <h1 className="text-4xl font-bold mb-2">Expert Dashboard</h1>
           <p className="text-muted-foreground">

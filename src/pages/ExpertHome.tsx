@@ -122,17 +122,53 @@ const ExpertHome = () => {
       <Navigation />
       
       <main className="flex-1 container mx-auto px-4 py-12">
+        {/* Pending Requests Alert */}
+        {interviewRequests > 0 && (
+          <div className="mb-8 p-6 bg-accent/10 border border-accent/30 rounded-xl animate-fade-in">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-accent/20 animate-pulse">
+                  <Bell className="w-6 h-6 text-accent" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-accent">
+                    You have {interviewRequests} interview request{interviewRequests !== 1 ? 's' : ''} pending!
+                  </h3>
+                  <p className="text-muted-foreground">Researchers are waiting to hear from you</p>
+                </div>
+              </div>
+              <Button onClick={() => navigate('/expert-dashboard')} className="gap-2">
+                <MessageSquare className="w-4 h-4" />
+                View Requests
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent/10 mb-6">
             <CheckCircle className="w-10 h-10 text-accent" />
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-            All done!
-          </h1>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-accent mb-6">
-            Now wait for researchers to contact you
-          </h2>
+          {interviewRequests > 0 ? (
+            <>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-accent">
+                Great news!
+              </h1>
+              <h2 className="text-2xl md:text-3xl font-semibold text-foreground/80 mb-6">
+                Researchers want to interview you
+              </h2>
+            </>
+          ) : (
+            <>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                All done!
+              </h1>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-accent mb-6">
+                Now wait for researchers to contact you
+              </h2>
+            </>
+          )}
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Your expert profile is live. Researchers can now find you and request interviews.
           </p>
