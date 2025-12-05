@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import RequestInterviewDialog from "@/components/RequestInterviewDialog";
@@ -9,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Star, MapPin, Calendar } from "lucide-react";
+import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
 
 const mockExperts = [
   {
@@ -267,6 +269,7 @@ const mockExperts = [
 ];
 
 const FindExperts = () => {
+  const { isLoading, userType } = useUserTypeGuard(['researcher']);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [selectedExpertise, setSelectedExpertise] = useState<string>("all");
@@ -308,6 +311,18 @@ const FindExperts = () => {
     setSelectedExpert(expert);
     setRequestDialogOpen(true);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
