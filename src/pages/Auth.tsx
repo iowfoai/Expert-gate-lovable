@@ -143,51 +143,36 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Build metadata with all user info - the trigger will use this to create the profile
+      const metadata: any = {
+        full_name: fullName,
+        user_type: userType,
+        country: country || null,
+        bio: bio || null,
+      };
+
+      if (userType === "expert") {
+        metadata.education_level = educationLevel;
+        metadata.institution = institution;
+        metadata.field_of_expertise = fieldOfExpertise.split(',').map(f => f.trim());
+        metadata.years_of_experience = parseInt(yearsOfExperience);
+        metadata.publications = publications || null;
+        metadata.professional_website = professionalWebsite || null;
+      } else {
+        metadata.research_institution = researchInstitution || null;
+        metadata.research_field = researchField ? researchField.split(',').map(f => f.trim()) : null;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: fullName,
-            user_type: userType,
-          }
+          data: metadata
         }
       });
 
       if (error) throw error;
-
-      if (data.user) {
-        // Update profile with additional information
-        const profileData: any = {
-          id: data.user.id,
-          email: email,
-          full_name: fullName,
-          user_type: userType,
-          country: country || null,
-          bio: bio || null,
-        };
-
-        if (userType === "expert") {
-          profileData.education_level = educationLevel;
-          profileData.institution = institution;
-          profileData.field_of_expertise = fieldOfExpertise.split(',').map(f => f.trim());
-          profileData.years_of_experience = parseInt(yearsOfExperience);
-          profileData.publications = publications || null;
-          profileData.professional_website = professionalWebsite || null;
-        } else {
-          profileData.research_institution = researchInstitution || null;
-          profileData.research_field = researchField ? researchField.split(',').map(f => f.trim()) : null;
-        }
-
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert(profileData, { onConflict: 'id' });
-
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-        }
-      }
 
       toast({
         title: "Success",
