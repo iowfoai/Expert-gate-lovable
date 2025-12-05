@@ -47,15 +47,11 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Show loading while checking auth
+  // Show minimal loading while checking auth - prevents flash of content
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-        </main>
-        <Footer />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
       </div>
     );
   }
