@@ -1,22 +1,8 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import FindExperts from "./pages/FindExperts";
-import ExpertDashboard from "./pages/ExpertDashboard";
-import ExpertHome from "./pages/ExpertHome";
-import ExpertsDirectory from "./pages/ExpertsDirectory";
-import About from "./pages/About";
-import FAQ from "./pages/FAQ";
-import Contact from "./pages/Contact";
-import NotFound from "./pages/NotFound";
-import PasswordReset from "./pages/PasswordReset";
-import Profile from "./pages/Profile";
-import AccountSettings from "./pages/AccountSettings";
-import InterviewHistory from "./pages/InterviewHistory";
-import UniversityPlan from "./pages/UniversityPlan";
+import { BrowserRouter } from "react-router-dom";
+import AnimatedRoutes from "./components/AnimatedRoutes";
 
 const queryClient = new QueryClient();
 
@@ -25,24 +11,7 @@ const App = () => (
     <Toaster />
     <Sonner />
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/reset-password" element={<PasswordReset />} />
-        <Route path="/find-experts" element={<FindExperts />} />
-        <Route path="/expert-dashboard" element={<ExpertDashboard />} />
-        <Route path="/expert-home" element={<ExpertHome />} />
-        <Route path="/experts-directory" element={<ExpertsDirectory />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/account-settings" element={<AccountSettings />} />
-        <Route path="/interview-history" element={<InterviewHistory />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/university-plan" element={<UniversityPlan />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <AnimatedRoutes />
     </BrowserRouter>
   </QueryClientProvider>
 );

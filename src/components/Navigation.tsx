@@ -76,10 +76,12 @@ const Navigation = () => {
 
   const isExpert = userType === 'expert';
 
+  const linkClass = "text-sm font-medium hover:text-accent transition-all duration-300 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-0.5 after:bg-accent after:scale-x-0 after:origin-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-left";
+
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border transition-all duration-300">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to={isExpert ? "/expert-home" : "/"} className="flex items-center gap-2 text-xl font-semibold">
+        <Link to={isExpert ? "/expert-home" : "/"} className="flex items-center gap-2 text-xl font-semibold hover:scale-105 transition-transform duration-300">
           <Network className="w-6 h-6 text-accent" />
           <span>ExpertGate</span>
         </Link>
@@ -87,30 +89,30 @@ const Navigation = () => {
         <div className="hidden md:flex items-center gap-6">
           {isExpert ? (
             <>
-              <Link to="/expert-home" className="text-sm font-medium hover:text-accent transition-colors">
+              <Link to="/expert-home" className={linkClass}>
                 Home
               </Link>
-              <Link to="/experts-directory" className="text-sm font-medium hover:text-accent transition-colors">
+              <Link to="/experts-directory" className={linkClass}>
                 Expert Directory
               </Link>
-              <Link to="/expert-dashboard" className="text-sm font-medium hover:text-accent transition-colors">
+              <Link to="/expert-dashboard" className={linkClass}>
                 Dashboard
               </Link>
             </>
           ) : (
             <>
-              <Link to="/find-experts" className="text-sm font-medium hover:text-accent transition-colors">
+              <Link to="/find-experts" className={linkClass}>
                 Find Experts
               </Link>
-              <Link to="/how-it-works" className="text-sm font-medium hover:text-accent transition-colors">
+              <Link to="/how-it-works" className={linkClass}>
                 How It Works
               </Link>
             </>
           )}
-          <Link to="/about" className="text-sm font-medium hover:text-accent transition-colors">
+          <Link to="/about" className={linkClass}>
             About
           </Link>
-          <Link to="/faq" className="text-sm font-medium hover:text-accent transition-colors">
+          <Link to="/faq" className={linkClass}>
             FAQ
           </Link>
         </div>
