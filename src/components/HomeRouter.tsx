@@ -8,43 +8,49 @@ const HomeRouter = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkUserType = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        setUserType(null);
-        setIsLoading(false);
-        return;
-      }
+    let isMounted = true;
 
+    const fetchUserType = async (userId: string) => {
       const { data: profile } = await supabase
         .from('profiles')
         .select('user_type')
-        .eq('id', session.user.id)
+        .eq('id', userId)
         .single();
-
-      setUserType(profile?.user_type || null);
-      setIsLoading(false);
+      
+      if (isMounted) {
+        setUserType(profile?.user_type || null);
+        setIsLoading(false);
+      }
     };
 
-    checkUserType();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      
+      if (session?.user) {
+        fetchUserType(session.user.id);
+      } else {
         setUserType(null);
-        setIsLoading(false);
-      } else if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('user_type')
-          .eq('id', session.user.id)
-          .single();
-        setUserType(profile?.user_type || null);
         setIsLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return;
+      
+      if (session?.user) {
+        fetchUserType(session.user.id);
+      } else {
+        setUserType(null);
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (isLoading) {
@@ -55,7 +61,6 @@ const HomeRouter = () => {
     );
   }
 
-  // Render ExpertHome directly for experts, Index for everyone else
   if (userType === 'expert') {
     return <ExpertHome />;
   }
