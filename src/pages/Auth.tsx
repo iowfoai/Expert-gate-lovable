@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Network, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { countries } from "@/lib/countries";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -298,13 +299,18 @@ const Auth = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="country">Country</Label>
-                    <Input 
-                      id="country" 
-                      type="text" 
-                      placeholder="United States"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                    />
+                    <Select value={country} onValueChange={setCountry}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your country" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {countries.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {c}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   {userType === "expert" && (
