@@ -39,17 +39,31 @@ const Auth = () => {
   const [researchInstitution, setResearchInstitution] = useState("");
   const [researchField, setResearchField] = useState("");
 
-  // Check if user is already logged in
+  // Check if user is already logged in and redirect based on user type
   useEffect(() => {
+    const redirectUser = async (userId: string) => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('user_type')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (profile?.user_type === 'expert') {
+        navigate('/expert-home');
+      } else {
+        navigate('/');
+      }
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate('/');
+        redirectUser(session.user.id);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        navigate('/');
+        redirectUser(session.user.id);
       }
     });
 
