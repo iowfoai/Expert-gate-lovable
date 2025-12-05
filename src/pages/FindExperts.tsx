@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import RequestInterviewDialog from "@/components/RequestInterviewDialog";
@@ -7,298 +6,79 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Star, MapPin, Calendar } from "lucide-react";
+import { Search, Star, MapPin, Calendar, Users } from "lucide-react";
 import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockExperts = [
-  {
-    id: 1,
-    name: "Dr. Sarah Mitchell",
-    title: "Professor of Climate Science",
-    institution: "MIT",
-    expertise: ["Climate Change", "Environmental Policy", "Sustainability"],
-    rating: 4.9,
-    interviews: 28,
-    available: true,
-    country: "USA"
-  },
-  {
-    id: 2,
-    name: "Prof. James Chen",
-    title: "AI & Machine Learning Researcher",
-    institution: "Stanford University",
-    expertise: ["Artificial Intelligence", "Neural Networks", "Computer Vision"],
-    rating: 4.8,
-    interviews: 35,
-    available: true,
-    country: "USA"
-  },
-  {
-    id: 3,
-    name: "Dr. Emma Williams",
-    title: "Senior Medical Researcher",
-    institution: "Oxford University",
-    expertise: ["Virology", "Public Health", "Epidemiology"],
-    rating: 5.0,
-    interviews: 42,
-    available: false,
-    country: "UK"
-  },
-  {
-    id: 4,
-    name: "Dr. Michael Rodriguez",
-    title: "Quantum Physics Professor",
-    institution: "Caltech",
-    expertise: ["Quantum Computing", "Theoretical Physics", "Nanotechnology"],
-    rating: 4.7,
-    interviews: 31,
-    available: true,
-    country: "USA"
-  },
-  {
-    id: 5,
-    name: "Prof. Amelia Zhang",
-    title: "Economics & Policy Expert",
-    institution: "Harvard University",
-    expertise: ["Behavioral Economics", "Public Policy", "Development Economics"],
-    rating: 4.9,
-    interviews: 45,
-    available: true,
-    country: "USA"
-  },
-  {
-    id: 6,
-    name: "Dr. Thomas Anderson",
-    title: "Neuroscience Researcher",
-    institution: "Cambridge University",
-    expertise: ["Cognitive Neuroscience", "Brain Imaging", "Memory Research"],
-    rating: 4.8,
-    interviews: 38,
-    available: true,
-    country: "UK"
-  },
-  {
-    id: 7,
-    name: "Prof. Priya Sharma",
-    title: "Renewable Energy Specialist",
-    institution: "IIT Delhi",
-    expertise: ["Solar Energy", "Energy Storage", "Smart Grids"],
-    rating: 4.6,
-    interviews: 22,
-    available: false,
-    country: "India"
-  },
-  {
-    id: 8,
-    name: "Dr. Lucas Martin",
-    title: "Marine Biology Professor",
-    institution: "University of Queensland",
-    expertise: ["Marine Conservation", "Coral Reefs", "Ocean Acidification"],
-    rating: 4.9,
-    interviews: 29,
-    available: true,
-    country: "Australia"
-  },
-  {
-    id: 9,
-    name: "Prof. Fatima Al-Rashid",
-    title: "Cybersecurity Expert",
-    institution: "ETH Zurich",
-    expertise: ["Network Security", "Cryptography", "Cyber Threat Intelligence"],
-    rating: 5.0,
-    interviews: 33,
-    available: true,
-    country: "Switzerland"
-  },
-  {
-    id: 10,
-    name: "Dr. Robert Kim",
-    title: "Cancer Research Scientist",
-    institution: "Johns Hopkins University",
-    expertise: ["Oncology", "Immunotherapy", "Clinical Trials"],
-    rating: 4.8,
-    interviews: 51,
-    available: false,
-    country: "USA"
-  },
-  {
-    id: 11,
-    name: "Prof. Isabella Rossi",
-    title: "Art History Scholar",
-    institution: "Sapienza University of Rome",
-    expertise: ["Renaissance Art", "Cultural Heritage", "Museum Studies"],
-    rating: 4.7,
-    interviews: 19,
-    available: true,
-    country: "Italy"
-  },
-  {
-    id: 12,
-    name: "Dr. Ahmed Hassan",
-    title: "Data Science Researcher",
-    institution: "University of Toronto",
-    expertise: ["Big Data Analytics", "Machine Learning", "Statistical Modeling"],
-    rating: 4.9,
-    interviews: 40,
-    available: true,
-    country: "Canada"
-  },
-  {
-    id: 13,
-    name: "Prof. Sophie Dubois",
-    title: "Psychology & Behavior Expert",
-    institution: "Sorbonne University",
-    expertise: ["Social Psychology", "Human Behavior", "Mental Health"],
-    rating: 4.8,
-    interviews: 36,
-    available: true,
-    country: "France"
-  },
-  {
-    id: 14,
-    name: "Dr. Hiroshi Tanaka",
-    title: "Robotics Engineer",
-    institution: "University of Tokyo",
-    expertise: ["Robotics", "Automation", "Human-Robot Interaction"],
-    rating: 4.6,
-    interviews: 27,
-    available: false,
-    country: "Japan"
-  },
-  {
-    id: 15,
-    name: "Prof. Maria Santos",
-    title: "Agricultural Science Professor",
-    institution: "University of São Paulo",
-    expertise: ["Sustainable Agriculture", "Crop Science", "Food Security"],
-    rating: 4.7,
-    interviews: 24,
-    available: true,
-    country: "Brazil"
-  },
-  {
-    id: 16,
-    name: "Dr. David Thompson",
-    title: "Aerospace Engineering Specialist",
-    institution: "Georgia Tech",
-    expertise: ["Aerodynamics", "Spacecraft Design", "Propulsion Systems"],
-    rating: 4.9,
-    interviews: 30,
-    available: true,
-    country: "USA"
-  },
-  {
-    id: 17,
-    name: "Prof. Elena Petrova",
-    title: "Literature & Linguistics Expert",
-    institution: "Moscow State University",
-    expertise: ["Comparative Literature", "Linguistics", "Translation Studies"],
-    rating: 4.5,
-    interviews: 16,
-    available: true,
-    country: "Russia"
-  },
-  {
-    id: 18,
-    name: "Dr. William O'Brien",
-    title: "Biomedical Engineering Professor",
-    institution: "Trinity College Dublin",
-    expertise: ["Medical Devices", "Biomaterials", "Tissue Engineering"],
-    rating: 4.8,
-    interviews: 32,
-    available: false,
-    country: "Ireland"
-  },
-  {
-    id: 19,
-    name: "Prof. Yuki Nakamura",
-    title: "Environmental Chemistry Researcher",
-    institution: "Kyoto University",
-    expertise: ["Pollution Control", "Green Chemistry", "Atmospheric Science"],
-    rating: 4.7,
-    interviews: 26,
-    available: true,
-    country: "Japan"
-  },
-  {
-    id: 20,
-    name: "Dr. Carmen Diaz",
-    title: "Urban Planning Expert",
-    institution: "Polytechnic University of Madrid",
-    expertise: ["Smart Cities", "Urban Design", "Transportation Planning"],
-    rating: 4.6,
-    interviews: 21,
-    available: true,
-    country: "Spain"
-  },
-  {
-    id: 21,
-    name: "Prof. Lars Andersen",
-    title: "Genetics & Genomics Researcher",
-    institution: "University of Copenhagen",
-    expertise: ["Human Genetics", "Gene Therapy", "Precision Medicine"],
-    rating: 4.9,
-    interviews: 44,
-    available: true,
-    country: "Denmark"
-  },
-  {
-    id: 22,
-    name: "Dr. Olivia Park",
-    title: "Educational Technology Specialist",
-    institution: "Seoul National University",
-    expertise: ["EdTech", "Online Learning", "Curriculum Development"],
-    rating: 4.8,
-    interviews: 34,
-    available: true,
-    country: "South Korea"
-  },
-  {
-    id: 23,
-    name: "Prof. Marcus Johnson",
-    title: "Philosophy & Ethics Scholar",
-    institution: "Yale University",
-    expertise: ["Ethics", "Political Philosophy", "Bioethics"],
-    rating: 4.7,
-    interviews: 25,
-    available: false,
-    country: "USA"
-  }
-];
+interface Expert {
+  id: string;
+  full_name: string;
+  bio: string | null;
+  institution: string | null;
+  field_of_expertise: string[] | null;
+  education_level: string | null;
+  years_of_experience: number | null;
+  profile_image_url: string | null;
+  country: string | null;
+  is_available: boolean | null;
+}
 
 const FindExperts = () => {
-  const { isLoading, userType } = useUserTypeGuard(['researcher']);
+  const { isLoading: authLoading } = useUserTypeGuard(['researcher']);
+  const [experts, setExperts] = useState<Expert[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [selectedExpertise, setSelectedExpertise] = useState<string>("all");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
-  const [selectedExpert, setSelectedExpert] = useState<any>(null);
+  const [selectedExpert, setSelectedExpert] = useState<Expert | null>(null);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
 
+  useEffect(() => {
+    const fetchExperts = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, is_available')
+        .eq('user_type', 'expert');
+
+      if (error) {
+        console.error('Error fetching experts:', error);
+        setLoading(false);
+        return;
+      }
+
+      setExperts(data || []);
+      setLoading(false);
+    };
+
+    if (!authLoading) {
+      fetchExperts();
+    }
+  }, [authLoading]);
+
   const allExpertiseFields = Array.from(
-    new Set(mockExperts.flatMap(expert => expert.expertise))
+    new Set(experts.flatMap(expert => expert.field_of_expertise || []))
   ).sort();
 
   const allCountries = Array.from(
-    new Set(mockExperts.map(expert => expert.country))
-  ).sort();
+    new Set(experts.map(expert => expert.country).filter(Boolean))
+  ).sort() as string[];
 
-  const filteredExperts = mockExperts.filter(expert => {
+  const filteredExperts = experts.filter(expert => {
     const matchesSearch = searchQuery === "" || 
-      expert.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      expert.institution.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      expert.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()));
+      expert.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      expert.institution?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      expert.field_of_expertise?.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesGeneralFilter = 
       selectedFilter === "all" ||
-      (selectedFilter === "available" && expert.available) ||
-      (selectedFilter === "top-rated" && expert.rating >= 4.8);
+      (selectedFilter === "available" && expert.is_available);
     
     const matchesExpertise = 
       selectedExpertise === "all" ||
-      expert.expertise.includes(selectedExpertise);
+      expert.field_of_expertise?.includes(selectedExpertise);
     
     const matchesCountry = 
       selectedCountry === "all" ||
@@ -307,12 +87,28 @@ const FindExperts = () => {
     return matchesSearch && matchesGeneralFilter && matchesExpertise && matchesCountry;
   });
 
-  const handleConnectExpert = (expert: any) => {
+  const handleConnectExpert = (expert: Expert) => {
     setSelectedExpert(expert);
     setRequestDialogOpen(true);
   };
 
-  if (isLoading) {
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const getEducationLabel = (level: string | null) => {
+    const labels: Record<string, string> = {
+      bachelors: "Bachelor's",
+      masters: "Master's",
+      phd: "PhD",
+      postdoc: "Postdoctoral",
+      professor: "Professor",
+      industry_professional: "Industry Professional"
+    };
+    return level ? labels[level] || level : null;
+  };
+
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navigation />
@@ -362,7 +158,7 @@ const FindExperts = () => {
                 size="sm"
                 onClick={() => setSelectedFilter("all")}
               >
-                All Fields
+                All Experts
               </Button>
               <Button 
                 variant={selectedFilter === "available" ? "default" : "outline"} 
@@ -370,13 +166,6 @@ const FindExperts = () => {
                 onClick={() => setSelectedFilter("available")}
               >
                 Available Now
-              </Button>
-              <Button 
-                variant={selectedFilter === "top-rated" ? "default" : "outline"} 
-                size="sm"
-                onClick={() => setSelectedFilter("top-rated")}
-              >
-                Top Rated
               </Button>
             </div>
           </div>
@@ -422,71 +211,101 @@ const FindExperts = () => {
         <div className="mb-4 text-sm text-muted-foreground">
           Showing {filteredExperts.length} expert{filteredExperts.length !== 1 ? 's' : ''}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredExperts.map((expert) => (
-            <Card key={expert.id} className="hover:border-accent transition-colors">
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <Avatar className="w-16 h-16">
-                    <AvatarFallback className="bg-accent/10 text-accent font-semibold">
-                      {expert.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{expert.name}</h3>
-                    <p className="text-sm text-muted-foreground">{expert.title}</p>
-                    <p className="text-sm text-muted-foreground">{expert.institution}</p>
+
+        {filteredExperts.length === 0 ? (
+          <div className="text-center py-16">
+            <Users className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
+            <h3 className="text-xl font-medium mb-2">No experts found</h3>
+            <p className="text-muted-foreground">
+              {searchQuery || selectedFilter !== "all" || selectedExpertise !== "all" || selectedCountry !== "all"
+                ? "Try adjusting your search criteria"
+                : "No experts have registered yet"}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredExperts.map((expert) => (
+              <Card key={expert.id} className="hover:border-accent transition-colors">
+                <CardHeader>
+                  <div className="flex items-start gap-4">
+                    <Avatar className="w-16 h-16">
+                      <AvatarImage src={expert.profile_image_url || undefined} />
+                      <AvatarFallback className="bg-accent/10 text-accent font-semibold">
+                        {getInitials(expert.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">{expert.full_name}</h3>
+                      {expert.education_level && (
+                        <p className="text-sm text-muted-foreground">{getEducationLabel(expert.education_level)}</p>
+                      )}
+                      {expert.institution && (
+                        <p className="text-sm text-muted-foreground">{expert.institution}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {expert.expertise.map((skill) => (
-                    <Badge key={skill} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
+                </CardHeader>
                 
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-gold text-gold" />
-                    <span className="font-medium">{expert.rating}</span>
+                <CardContent className="space-y-4">
+                  {expert.field_of_expertise && expert.field_of_expertise.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {expert.field_of_expertise.slice(0, 3).map((skill) => (
+                        <Badge key={skill} variant="secondary">
+                          {skill}
+                        </Badge>
+                      ))}
+                      {expert.field_of_expertise.length > 3 && (
+                        <Badge variant="outline">
+                          +{expert.field_of_expertise.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  
+                  {expert.years_of_experience && (
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Star className="w-4 h-4" />
+                      <span>{expert.years_of_experience} years of experience</span>
+                    </div>
+                  )}
+                  
+                  {expert.country && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="w-4 h-4" />
+                      {expert.country}
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-sm">
+                      {expert.is_available ? (
+                        <span className="text-green-600">Available</span>
+                      ) : (
+                        <span className="text-muted-foreground">Limited availability</span>
+                      )}
+                    </span>
                   </div>
-                  <div className="text-muted-foreground">
-                    {expert.interviews} interviews
-                  </div>
-                </div>
+
+                  {expert.bio && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {expert.bio}
+                    </p>
+                  )}
+                </CardContent>
                 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="w-4 h-4" />
-                  {expert.country}
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span className="text-sm">
-                    {expert.available ? (
-                      <span className="text-green-600">Available</span>
-                    ) : (
-                      <span className="text-muted-foreground">Limited availability</span>
-                    )}
-                  </span>
-                </div>
-              </CardContent>
-              
-              <CardFooter>
-                <Button 
-                  className="w-full"
-                  onClick={() => handleConnectExpert(expert)}
-                >
-                  Connect
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                <CardFooter>
+                  <Button 
+                    className="w-full"
+                    onClick={() => handleConnectExpert(expert)}
+                  >
+                    Request Interview
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
       
       {/* Interview Request Dialog */}
@@ -494,8 +313,8 @@ const FindExperts = () => {
         <RequestInterviewDialog
           open={requestDialogOpen}
           onOpenChange={setRequestDialogOpen}
-          expertName={selectedExpert.name}
-          expertId={selectedExpert.id.toString()}
+          expertName={selectedExpert.full_name}
+          expertId={selectedExpert.id}
         />
       )}
       
