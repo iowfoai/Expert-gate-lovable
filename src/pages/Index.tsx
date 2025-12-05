@@ -8,19 +8,22 @@ import { Search, Calendar, Shield, Star, Users, CheckCircle } from "lucide-react
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Show nothing for auth-dependent sections until we know auth state
+  const showGuestContent = isLoggedIn === false;
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
@@ -35,7 +38,7 @@ const Index = () => {
             Find and interview verified experts for your research projects. Ethical, efficient, and professional — bridging the gap between knowledge seekers and knowledge holders.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {!isLoggedIn && (
+            {showGuestContent && (
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto"
@@ -181,7 +184,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section - Hidden when logged in */}
-      {!isLoggedIn && (
+      {showGuestContent && (
         <section id="pricing" className="container mx-auto px-4 py-20">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Choose Your Plan</h2>
@@ -316,7 +319,7 @@ const Index = () => {
       )}
 
       {/* CTA Section - Hidden when logged in */}
-      {!isLoggedIn && (
+      {showGuestContent && (
         <section className="container mx-auto px-4 py-20">
           <div className="max-w-3xl mx-auto text-center bg-accent/5 rounded-2xl p-12 border border-accent/20">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Started?</h2>
