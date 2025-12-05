@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Network, LogOut, User, Settings, History, UserCircle } from "lucide-react";
+import { Network, LogOut, User, Settings, History, UserCircle, Users, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -17,6 +17,7 @@ import {
 const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profileName, setProfileName] = useState<string>("");
+  const [userType, setUserType] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -25,7 +26,7 @@ const Navigation = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfileName(session.user.id);
+        fetchProfile(session.user.id);
       }
     });
 
@@ -33,24 +34,26 @@ const Navigation = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfileName(session.user.id);
+        fetchProfile(session.user.id);
       } else {
         setProfileName("");
+        setUserType(null);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfileName = async (userId: string) => {
+  const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("full_name, user_type")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
     
     if (!error && data) {
       setProfileName(data.full_name);
+      setUserType(data.user_type);
     }
   };
 
@@ -71,24 +74,39 @@ const Navigation = () => {
     }
   };
 
+  const isExpert = userType === 'expert';
+
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 text-xl font-semibold">
+        <Link to={isExpert ? "/expert-home" : "/"} className="flex items-center gap-2 text-xl font-semibold">
           <Network className="w-6 h-6 text-accent" />
           <span>ExpertGate</span>
         </Link>
         
         <div className="hidden md:flex items-center gap-6">
-          <Link to="/find-experts" className="text-sm font-medium hover:text-accent transition-colors">
-            Find Experts
-          </Link>
-          <Link to="/expert-dashboard" className="text-sm font-medium hover:text-accent transition-colors">
-            Expert View
-          </Link>
-          <Link to="/how-it-works" className="text-sm font-medium hover:text-accent transition-colors">
-            How It Works
-          </Link>
+          {isExpert ? (
+            <>
+              <Link to="/expert-home" className="text-sm font-medium hover:text-accent transition-colors">
+                Home
+              </Link>
+              <Link to="/experts-directory" className="text-sm font-medium hover:text-accent transition-colors">
+                Expert Directory
+              </Link>
+              <Link to="/expert-dashboard" className="text-sm font-medium hover:text-accent transition-colors">
+                Dashboard
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/find-experts" className="text-sm font-medium hover:text-accent transition-colors">
+                Find Experts
+              </Link>
+              <Link to="/how-it-works" className="text-sm font-medium hover:text-accent transition-colors">
+                How It Works
+              </Link>
+            </>
+          )}
           <Link to="/about" className="text-sm font-medium hover:text-accent transition-colors">
             About
           </Link>
@@ -109,6 +127,19 @@ const Navigation = () => {
               <DropdownMenuContent align="end" className="w-56 bg-background">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                {isExpert && (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate("/expert-home")}>
+                      <Home className="w-4 h-4 mr-2" />
+                      Expert Home
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/experts-directory")}>
+                      <Users className="w-4 h-4 mr-2" />
+                      Expert Directory
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem onClick={() => navigate("/profile")}>
                   <UserCircle className="w-4 h-4 mr-2" />
                   Profile
