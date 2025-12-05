@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Network, LogOut, User, Settings, History, UserCircle, Users, Home } from "lucide-react";
+import { Network, LogOut, User, Settings, History, UserCircle, Users, Home, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -95,6 +95,9 @@ const Navigation = () => {
               <Link to="/experts-directory" className={linkClass}>
                 Expert Directory
               </Link>
+              <Link to="/connections" className={linkClass}>
+                Connections
+              </Link>
               <Link to="/expert-dashboard" className={linkClass}>
                 Dashboard
               </Link>
@@ -135,9 +138,13 @@ const Navigation = () => {
                       <Home className="w-4 h-4 mr-2" />
                       Expert Home
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/experts-directory")}>
+                <DropdownMenuItem onClick={() => navigate("/experts-directory")}>
                       <Users className="w-4 h-4 mr-2" />
                       Expert Directory
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/connections")}>
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Connections
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
