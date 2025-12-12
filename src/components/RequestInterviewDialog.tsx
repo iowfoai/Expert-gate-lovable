@@ -108,7 +108,7 @@ const RequestInterviewDialog = ({
         return;
       }
 
-      const { error } = await supabase
+      const { data: insertedRequest, error } = await supabase
         .from('interview_requests')
         .insert({
           researcher_id: user.id,
@@ -119,9 +119,18 @@ const RequestInterviewDialog = ({
           preferred_date: format(values.preferredDate, 'yyyy-MM-dd'),
           duration_minutes: values.durationMinutes,
           status: 'pending'
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      // Send email notification to expert
+      if (insertedRequest) {
+        supabase.functions.invoke('send-interview-notification', {
+          body: { type: 'new_request', interviewRequestId: insertedRequest.id }
+        }).catch(err => console.error('Failed to send notification:', err));
+      }
 
       toast({
         title: "Request Sent!",
