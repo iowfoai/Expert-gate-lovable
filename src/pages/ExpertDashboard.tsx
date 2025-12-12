@@ -9,7 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Star, Users, Clock, CheckCircle, XCircle, FileText } from "lucide-react";
+import { Calendar as CalendarIcon, Star, Users, Clock, CheckCircle, XCircle, FileText } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import { useNavigate } from "react-router-dom";
 import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
 import { supabase } from "@/integrations/supabase/client";
@@ -338,7 +339,7 @@ const ExpertDashboard = () => {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
@@ -357,21 +358,7 @@ const ExpertDashboard = () => {
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-accent" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold">{profile.interviews_remaining ?? 5}</div>
-                  <div className="text-sm text-muted-foreground">Remaining This Month</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-accent" />
+                  <CalendarIcon className="w-5 h-5 text-accent" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{pendingRequests.length}</div>
@@ -395,6 +382,46 @@ const ExpertDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Calendar Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5" />
+                Interview Calendar
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Calendar
+                mode="multiple"
+                selected={upcomingInterviews
+                  .filter(i => i.preferred_date)
+                  .map(i => new Date(i.preferred_date!))}
+                className="rounded-md border pointer-events-none"
+              />
+              <div className="mt-4 space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Upcoming Dates:</p>
+                {upcomingInterviews.filter(i => i.preferred_date).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No scheduled interviews</p>
+                ) : (
+                  upcomingInterviews
+                    .filter(i => i.preferred_date)
+                    .sort((a, b) => new Date(a.preferred_date!).getTime() - new Date(b.preferred_date!).getTime())
+                    .slice(0, 5)
+                    .map(interview => (
+                      <div key={interview.id} className="flex items-center gap-2 text-sm">
+                        <div className="w-2 h-2 rounded-full bg-accent" />
+                        <span>{new Date(interview.preferred_date!).toLocaleDateString()}</span>
+                        <span className="text-muted-foreground truncate">- {interview.researcher?.full_name}</span>
+                      </div>
+                    ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="lg:col-span-2">
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="requests" className="mb-8">
@@ -431,7 +458,7 @@ const ExpertDashboard = () => {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                             {request.preferred_date && (
                               <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
+                                <CalendarIcon className="w-4 h-4" />
                                 {new Date(request.preferred_date).toLocaleDateString()}
                               </div>
                             )}
@@ -500,7 +527,7 @@ const ExpertDashboard = () => {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                             {interview.preferred_date && (
                               <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
+                                <CalendarIcon className="w-4 h-4" />
                                 {new Date(interview.preferred_date).toLocaleDateString()}
                               </div>
                             )}
@@ -567,7 +594,7 @@ const ExpertDashboard = () => {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                             {interview.completed_at && (
                               <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
+                                <CalendarIcon className="w-4 h-4" />
                                 {new Date(interview.completed_at).toLocaleDateString()}
                               </div>
                             )}
@@ -596,6 +623,8 @@ const ExpertDashboard = () => {
             </div>
           </TabsContent>
         </Tabs>
+          </div>
+        </div>
       </div>
       
       {/* Interview Details Dialog */}
