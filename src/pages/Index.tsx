@@ -4,11 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { Search, Calendar, Shield, Star, Users, CheckCircle } from "lucide-react";
+import { Search, Calendar, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+interface Stats {
+  verifiedExperts: number;
+  completedInterviews: number;
+  researchFields: number;
+  totalResearchers: number;
+}
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [stats, setStats] = useState<Stats>({
+    verifiedExperts: 0,
+    completedInterviews: 0,
+    researchFields: 0,
+    totalResearchers: 0,
+  });
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -20,6 +33,50 @@ const Index = () => {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      // Fetch verified experts count
+      const { count: expertsCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_type', 'expert')
+        .eq('verification_status', 'verified');
+
+      // Fetch completed interviews count
+      const { count: interviewsCount } = await supabase
+        .from('interview_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'completed');
+
+      // Fetch unique research fields from experts
+      const { data: expertsWithFields } = await supabase
+        .from('profiles')
+        .select('field_of_expertise')
+        .eq('user_type', 'expert')
+        .not('field_of_expertise', 'is', null);
+
+      const uniqueFields = new Set<string>();
+      expertsWithFields?.forEach(expert => {
+        expert.field_of_expertise?.forEach((field: string) => uniqueFields.add(field));
+      });
+
+      // Fetch researchers count
+      const { count: researchersCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_type', 'researcher');
+
+      setStats({
+        verifiedExperts: expertsCount || 0,
+        completedInterviews: interviewsCount || 0,
+        researchFields: uniqueFields.size,
+        totalResearchers: researchersCount || 0,
+      });
+    };
+
+    fetchStats();
   }, []);
 
   // Show nothing for auth-dependent sections until we know auth state
@@ -163,20 +220,20 @@ const Index = () => {
       <section className="container mx-auto px-4 py-16 bg-muted/30">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto text-center">
           <div>
-            <div className="text-4xl font-bold text-accent mb-2">500+</div>
+            <div className="text-4xl font-bold text-accent mb-2">{stats.verifiedExperts}</div>
             <div className="text-muted-foreground">Verified Experts</div>
           </div>
           <div>
-            <div className="text-4xl font-bold text-accent mb-2">1,200+</div>
+            <div className="text-4xl font-bold text-accent mb-2">{stats.completedInterviews}</div>
             <div className="text-muted-foreground">Interviews Completed</div>
           </div>
           <div>
-            <div className="text-4xl font-bold text-accent mb-2">50+</div>
+            <div className="text-4xl font-bold text-accent mb-2">{stats.researchFields}</div>
             <div className="text-muted-foreground">Research Fields</div>
           </div>
           <div>
-            <div className="text-4xl font-bold text-accent mb-2">98%</div>
-            <div className="text-muted-foreground">Satisfaction Rate</div>
+            <div className="text-4xl font-bold text-accent mb-2">{stats.totalResearchers}</div>
+            <div className="text-muted-foreground">Researchers</div>
           </div>
         </div>
       </section>
