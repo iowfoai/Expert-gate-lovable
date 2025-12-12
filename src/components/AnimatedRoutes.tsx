@@ -17,6 +17,7 @@ import PasswordReset from "@/pages/PasswordReset";
 import Profile from "@/pages/Profile";
 import AccountSettings from "@/pages/AccountSettings";
 import InterviewHistory from "@/pages/InterviewHistory";
+import Interviews from "@/pages/Interviews";
 
 
 const AnimatedRoutes = () => {
@@ -36,6 +37,7 @@ const AnimatedRoutes = () => {
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
         <Route path="/account-settings" element={<PageTransition><AccountSettings /></PageTransition>} />
         <Route path="/interview-history" element={<PageTransition><InterviewHistory /></PageTransition>} />
+        <Route path="/interviews" element={<PageTransition><Interviews /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/faq" element={<PageTransition><FAQ /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />

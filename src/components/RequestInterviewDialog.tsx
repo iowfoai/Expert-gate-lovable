@@ -24,8 +24,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Plus, X } from "lucide-react";
+import { CalendarIcon, Plus, X, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const interviewRequestSchema = z.object({
   researchTopic: z.string().min(10, "Research topic must be at least 10 characters"),
@@ -52,6 +54,8 @@ const RequestInterviewDialog = ({
   expertId,
 }: RequestInterviewDialogProps) => {
   const [questions, setQuestions] = useState<string[]>([""]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<InterviewRequestFormValues>({
     resolver: zodResolver(interviewRequestSchema),
@@ -90,17 +94,53 @@ const RequestInterviewDialog = ({
       return;
     }
 
-    // TODO: Submit to Supabase
-    console.log({
-      ...values,
-      questions: filteredQuestions,
-      expertId,
-    });
+    setIsSubmitting(true);
 
-    // Close dialog and reset form
-    onOpenChange(false);
-    form.reset();
-    setQuestions([""]);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to send a request",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('interview_requests')
+        .insert({
+          researcher_id: user.id,
+          expert_id: expertId,
+          research_topic: values.researchTopic,
+          description: values.description,
+          questions: filteredQuestions,
+          preferred_date: format(values.preferredDate, 'yyyy-MM-dd'),
+          duration_minutes: values.durationMinutes,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Request Sent!",
+        description: `Your interview request has been sent to ${expertName}. You'll be notified when they respond.`
+      });
+
+      onOpenChange(false);
+      form.reset();
+      setQuestions([""]);
+    } catch (error: any) {
+      console.error('Error sending request:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send interview request",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -279,7 +319,8 @@ const RequestInterviewDialog = ({
               >
                 Cancel
               </Button>
-              <Button type="submit">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Send Request
               </Button>
             </div>
