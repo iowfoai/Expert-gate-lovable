@@ -136,6 +136,10 @@ const ExpertDashboard = () => {
   };
 
   const handleAcceptRequest = async (requestId: string) => {
+    const request = pendingRequests.find(r => r.id === requestId);
+    if (!request) return;
+
+    // Update interview request status
     const { error } = await supabase
       .from('interview_requests')
       .update({ status: 'accepted' })
@@ -147,17 +151,40 @@ const ExpertDashboard = () => {
         description: "Failed to accept request",
         variant: "destructive"
       });
-    } else {
-      const accepted = pendingRequests.find(r => r.id === requestId);
-      if (accepted) {
-        setPendingRequests(prev => prev.filter(r => r.id !== requestId));
-        setUpcomingInterviews(prev => [...prev, { ...accepted, status: 'accepted' }]);
-      }
-      toast({
-        title: "Request Accepted",
-        description: "The researcher will be notified"
-      });
+      return;
     }
+
+    // Create or find existing connection for chat
+    const { data: existingConnection } = await supabase
+      .from('expert_connections')
+      .select('id')
+      .or(`and(requester_id.eq.${userId},recipient_id.eq.${request.researcher_id}),and(requester_id.eq.${request.researcher_id},recipient_id.eq.${userId})`)
+      .maybeSingle();
+
+    if (!existingConnection) {
+      // Create a new connection for this interview chat
+      await supabase
+        .from('expert_connections')
+        .insert({
+          requester_id: request.researcher_id,
+          recipient_id: userId,
+          status: 'accepted'
+        });
+    } else if (existingConnection) {
+      // Update to accepted if it exists but isn't accepted
+      await supabase
+        .from('expert_connections')
+        .update({ status: 'accepted' })
+        .eq('id', existingConnection.id);
+    }
+
+    setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+    setUpcomingInterviews(prev => [...prev, { ...request, status: 'accepted' }]);
+    
+    toast({
+      title: "Request Accepted",
+      description: "The researcher will be notified"
+    });
   };
 
   const handleDeclineRequest = async (requestId: string) => {
@@ -477,7 +504,25 @@ const ExpertDashboard = () => {
                           </Badge>
                         </div>
                         <Button 
-                          onClick={() => navigate(`/connections?chat=${interview.researcher_id}`)}
+                          onClick={async () => {
+                            // Find the connection for this researcher
+                            const { data: connection } = await supabase
+                              .from('expert_connections')
+                              .select('id')
+                              .or(`and(requester_id.eq.${userId},recipient_id.eq.${interview.researcher_id}),and(requester_id.eq.${interview.researcher_id},recipient_id.eq.${userId})`)
+                              .eq('status', 'accepted')
+                              .maybeSingle();
+                            
+                            if (connection) {
+                              navigate(`/connections?chat=${connection.id}`);
+                            } else {
+                              toast({
+                                title: "Error",
+                                description: "Connection not found. Please try accepting the request again.",
+                                variant: "destructive"
+                              });
+                            }
+                          }}
                         >
                           Chat with Researcher
                         </Button>

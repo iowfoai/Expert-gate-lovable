@@ -385,7 +385,7 @@ const Connections = () => {
                   </TabsTrigger>
                   <TabsTrigger value="researchers" className="flex-1 gap-2">
                     <FlaskConical className="w-4 h-4" />
-                    Researchers
+                    {userType === 'expert' ? 'Interviews' : 'Researchers'}
                   </TabsTrigger>
                 </TabsList>
               </CardHeader>
