@@ -280,7 +280,7 @@ const RequestInterviewDialog = ({
                 Cancel
               </Button>
               <Button type="submit">
-                Send Request ($1.50)
+                Send Request
               </Button>
             </div>
           </form>
