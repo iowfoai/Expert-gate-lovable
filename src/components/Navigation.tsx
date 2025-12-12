@@ -102,6 +102,15 @@ const Navigation = () => {
                 Dashboard
               </Link>
             </>
+          ) : user ? (
+            <>
+              <Link to="/find-experts" className={linkClass}>
+                Find Experts
+              </Link>
+              <Link to="/interviews" className={linkClass}>
+                Interviews
+              </Link>
+            </>
           ) : (
             <>
               <Link to="/find-experts" className={linkClass}>

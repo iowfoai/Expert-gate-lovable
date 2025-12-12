@@ -461,10 +461,10 @@ const ExpertDashboard = () => {
                             Research Topic: {interview.research_topic}
                           </p>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-                            {interview.scheduled_date && (
+                            {interview.preferred_date && (
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-4 h-4" />
-                                {new Date(interview.scheduled_date).toLocaleString()}
+                                {new Date(interview.preferred_date).toLocaleDateString()}
                               </div>
                             )}
                             <div className="flex items-center gap-1">
@@ -476,6 +476,11 @@ const ExpertDashboard = () => {
                             Confirmed
                           </Badge>
                         </div>
+                        <Button 
+                          onClick={() => navigate(`/connections?chat=${interview.researcher_id}`)}
+                        >
+                          Chat with Researcher
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
