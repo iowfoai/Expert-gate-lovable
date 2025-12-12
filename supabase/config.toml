@@ -1,1 +1,4 @@
 project_id = "efhfzvyqudvlglfseeci"
+
+[functions.send-interview-notification]
+verify_jwt = true

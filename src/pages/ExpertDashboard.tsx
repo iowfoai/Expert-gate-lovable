@@ -178,6 +178,11 @@ const ExpertDashboard = () => {
         .eq('id', existingConnection.id);
     }
 
+    // Send email notification to researcher
+    supabase.functions.invoke('send-interview-notification', {
+      body: { type: 'request_accepted', interviewRequestId: requestId }
+    }).catch(err => console.error('Failed to send notification:', err));
+
     setPendingRequests(prev => prev.filter(r => r.id !== requestId));
     setUpcomingInterviews(prev => [...prev, { ...request, status: 'accepted' }]);
     
@@ -200,6 +205,11 @@ const ExpertDashboard = () => {
         variant: "destructive"
       });
     } else {
+      // Send email notification to researcher
+      supabase.functions.invoke('send-interview-notification', {
+        body: { type: 'request_declined', interviewRequestId: requestId }
+      }).catch(err => console.error('Failed to send notification:', err));
+
       setPendingRequests(prev => prev.filter(r => r.id !== requestId));
       toast({
         title: "Request Declined",
