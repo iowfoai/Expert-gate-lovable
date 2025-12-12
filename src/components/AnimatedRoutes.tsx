@@ -17,7 +17,7 @@ import PasswordReset from "@/pages/PasswordReset";
 import Profile from "@/pages/Profile";
 import AccountSettings from "@/pages/AccountSettings";
 import InterviewHistory from "@/pages/InterviewHistory";
-import UniversityPlan from "@/pages/UniversityPlan";
+
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -39,7 +39,7 @@ const AnimatedRoutes = () => {
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/faq" element={<PageTransition><FAQ /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
-        <Route path="/university-plan" element={<PageTransition><UniversityPlan /></PageTransition>} />
+        
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
