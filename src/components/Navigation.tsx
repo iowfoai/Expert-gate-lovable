@@ -110,6 +110,9 @@ const Navigation = () => {
               <Link to="/interviews" className={linkClass}>
                 Interviews
               </Link>
+              <Link to="/connections" className={linkClass}>
+                Connections
+              </Link>
             </>
           ) : (
             <>
