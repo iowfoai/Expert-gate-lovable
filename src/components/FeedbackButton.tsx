@@ -8,6 +8,8 @@ const FeedbackButton = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const mouseDownTimeRef = useRef<number>(0);
+  const isLongPressRef = useRef<boolean>(false);
 
   useEffect(() => {
     // Initialize position to bottom right
@@ -18,6 +20,9 @@ const FeedbackButton = () => {
   }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    mouseDownTimeRef.current = Date.now();
+    isLongPressRef.current = false;
+    
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setDragOffset({
@@ -29,6 +34,9 @@ const FeedbackButton = () => {
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    mouseDownTimeRef.current = Date.now();
+    isLongPressRef.current = false;
+    
     if (buttonRef.current && e.touches[0]) {
       const rect = buttonRef.current.getBoundingClientRect();
       setDragOffset({
@@ -42,6 +50,10 @@ const FeedbackButton = () => {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
+        // Mark as long press if held for more than 500ms
+        if (Date.now() - mouseDownTimeRef.current > 500) {
+          isLongPressRef.current = true;
+        }
         setPosition({
           x: Math.max(0, Math.min(window.innerWidth - 100, e.clientX - dragOffset.x)),
           y: Math.max(0, Math.min(window.innerHeight - 40, e.clientY - dragOffset.y)),
@@ -51,6 +63,10 @@ const FeedbackButton = () => {
 
     const handleTouchMove = (e: TouchEvent) => {
       if (isDragging && e.touches[0]) {
+        // Mark as long press if held for more than 500ms
+        if (Date.now() - mouseDownTimeRef.current > 500) {
+          isLongPressRef.current = true;
+        }
         setPosition({
           x: Math.max(0, Math.min(window.innerWidth - 100, e.touches[0].clientX - dragOffset.x)),
           y: Math.max(0, Math.min(window.innerHeight - 40, e.touches[0].clientY - dragOffset.y)),
@@ -59,6 +75,10 @@ const FeedbackButton = () => {
     };
 
     const handleEnd = () => {
+      // Check if it was a long press
+      if (Date.now() - mouseDownTimeRef.current > 500) {
+        isLongPressRef.current = true;
+      }
       setIsDragging(false);
     };
 
@@ -78,7 +98,8 @@ const FeedbackButton = () => {
   }, [isDragging, dragOffset]);
 
   const handleClick = () => {
-    if (!isDragging) {
+    // Only open dialog if it was a quick click (less than 500ms)
+    if (!isLongPressRef.current) {
       setIsDialogOpen(true);
     }
   };
