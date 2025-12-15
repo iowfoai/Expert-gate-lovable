@@ -163,7 +163,61 @@ const ResearchersDirectory = () => {
     };
 
     fetchData();
-  }, [navigate]);
+  }, [navigate, toast]);
+
+  // Realtime subscription for connection status updates
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const channel = supabase
+      .channel('researcher-connections')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'expert_connections',
+        },
+        (payload) => {
+          const record = payload.new as {
+            requester_id: string;
+            recipient_id: string;
+            status: string;
+            connection_type: string;
+          } | null;
+
+          if (!record) return;
+
+          // Only handle friend connections relevant to current user
+          if (record.connection_type !== 'friend') return;
+          if (record.requester_id !== currentUserId && record.recipient_id !== currentUserId) return;
+
+          const otherUserId =
+            record.requester_id === currentUserId ? record.recipient_id : record.requester_id;
+
+          setConnectionStatuses((prev) => {
+            if (record.status === 'accepted') {
+              return { ...prev, [otherUserId]: 'accepted' };
+            } else if (record.status === 'pending') {
+              return {
+                ...prev,
+                [otherUserId]: record.requester_id === currentUserId ? 'pending_sent' : 'pending_received',
+              };
+            } else if (record.status === 'rejected') {
+              const updated = { ...prev };
+              delete updated[otherUserId];
+              return updated;
+            }
+            return prev;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId]);
 
   useEffect(() => {
     const filtered = researchers.filter(researcher => {
