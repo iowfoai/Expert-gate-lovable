@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, MessageSquare, Send, ArrowLeft, Check, X, GraduationCap, FlaskConical, Handshake, CheckCircle2, Circle } from "lucide-react";
+import { Users, MessageSquare, Send, ArrowLeft, Check, X, GraduationCap, FlaskConical, Handshake, Circle, Calendar, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
@@ -423,10 +423,15 @@ const Connections = () => {
         return connections.filter(c => 
           c.other_user.user_type === 'researcher' && c.connection_type === 'friend'
         );
-      } else {
+      } else if (activeTab === 'interviews') {
         // Interview connections with experts
         return connections.filter(c => 
-          c.other_user.user_type === 'expert'
+          c.other_user.user_type === 'expert' && c.connection_type === 'interview'
+        );
+      } else if (activeTab === 'collaborations') {
+        // Collaboration connections with experts
+        return connections.filter(c => 
+          c.other_user.user_type === 'expert' && c.connection_type === 'collaboration'
         );
       }
     } else {
@@ -436,14 +441,19 @@ const Connections = () => {
         return connections.filter(c => 
           c.other_user.user_type === 'expert' && c.connection_type === 'friend'
         );
-      } else {
-        // Collaboration AND interview connections with researchers
+      } else if (activeTab === 'interviews') {
+        // Interview connections with researchers
         return connections.filter(c => 
-          c.other_user.user_type === 'researcher' && 
-          (c.connection_type === 'collaboration' || c.connection_type === 'interview' || c.connection_type === 'friend')
+          c.other_user.user_type === 'researcher' && c.connection_type === 'interview'
+        );
+      } else if (activeTab === 'collaborations') {
+        // Collaboration connections with researchers
+        return connections.filter(c => 
+          c.other_user.user_type === 'researcher' && c.connection_type === 'collaboration'
         );
       }
     }
+    return [];
   };
 
   const getFilteredPending = () => {
@@ -452,20 +462,31 @@ const Connections = () => {
         return pendingRequests.filter(c => 
           c.other_user.user_type === 'researcher' && c.connection_type === 'friend'
         );
-      } else {
-        return pendingRequests.filter(c => c.other_user.user_type === 'expert');
+      } else if (activeTab === 'interviews') {
+        return pendingRequests.filter(c => 
+          c.other_user.user_type === 'expert' && c.connection_type === 'interview'
+        );
+      } else if (activeTab === 'collaborations') {
+        return pendingRequests.filter(c => 
+          c.other_user.user_type === 'expert' && c.connection_type === 'collaboration'
+        );
       }
     } else {
       if (activeTab === 'experts') {
         return pendingRequests.filter(c => 
           c.other_user.user_type === 'expert' && c.connection_type === 'friend'
         );
-      } else {
+      } else if (activeTab === 'interviews') {
+        return pendingRequests.filter(c => 
+          c.other_user.user_type === 'researcher' && c.connection_type === 'interview'
+        );
+      } else if (activeTab === 'collaborations') {
         return pendingRequests.filter(c => 
           c.other_user.user_type === 'researcher' && c.connection_type === 'collaboration'
         );
       }
     }
+    return [];
   };
 
   const isFriendConnection = (connection: Connection) => {
@@ -479,7 +500,7 @@ const Connections = () => {
     return (
       <ScrollArea className="h-[calc(100vh-450px)] min-h-[300px]">
         {/* Collaboration requests for researchers */}
-        {userType === 'researcher' && activeTab === 'interviews' && collaborationRequests.length > 0 && (
+        {userType === 'researcher' && activeTab === 'collaborations' && collaborationRequests.length > 0 && (
           <div className="px-4 pb-2">
             <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
               <Handshake className="w-4 h-4" />
@@ -591,13 +612,25 @@ const Connections = () => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{connection.other_user.full_name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium truncate">{connection.other_user.full_name}</p>
+                      {connection.connection_type === 'interview' && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
+                          <Calendar className="w-2.5 h-2.5 mr-0.5" />
+                          Interview
+                        </Badge>
+                      )}
+                      {connection.connection_type === 'collaboration' && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
+                          <Handshake className="w-2.5 h-2.5 mr-0.5" />
+                          Collab
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-xs opacity-80 truncate">{connection.other_user.institution}</p>
                   </div>
-                  {connection.has_unread ? (
-                    <Circle className="w-4 h-4 fill-destructive text-destructive" />
-                  ) : (
-                    <MessageSquare className="w-4 h-4 opacity-60" />
+                  {connection.has_unread && (
+                    <Circle className="w-4 h-4 fill-destructive text-destructive shrink-0" />
                   )}
                 </div>
               </button>
@@ -663,20 +696,21 @@ const Connections = () => {
           <Card className="lg:col-span-1 overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
               <CardHeader className="pb-2">
-                <TabsList className="w-full">
-                  <TabsTrigger value={userType === 'researcher' ? 'researchers' : 'experts'} className="flex-1 gap-2">
+                <TabsList className="w-full grid grid-cols-3">
+                  <TabsTrigger value={userType === 'researcher' ? 'researchers' : 'experts'} className="gap-1 text-xs px-2">
                     {userType === 'researcher' ? (
-                      <><FlaskConical className="w-4 h-4" />Researchers</>
+                      <><FlaskConical className="w-3.5 h-3.5" />Peers</>
                     ) : (
-                      <><GraduationCap className="w-4 h-4" />Experts</>
+                      <><GraduationCap className="w-3.5 h-3.5" />Peers</>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value={userType === 'researcher' ? 'interviews' : 'collaborations'} className="flex-1 gap-2">
-                    {userType === 'researcher' ? (
-                      <><GraduationCap className="w-4 h-4" />Interviews</>
-                    ) : (
-                      <><Handshake className="w-4 h-4" />Collaborations</>
-                    )}
+                  <TabsTrigger value="interviews" className="gap-1 text-xs px-2">
+                    <Calendar className="w-3.5 h-3.5" />
+                    Interviews
+                  </TabsTrigger>
+                  <TabsTrigger value="collaborations" className="gap-1 text-xs px-2">
+                    <Handshake className="w-3.5 h-3.5" />
+                    Collabs
                   </TabsTrigger>
                 </TabsList>
               </CardHeader>
@@ -684,7 +718,10 @@ const Connections = () => {
                 <TabsContent value={userType === 'researcher' ? 'researchers' : 'experts'} className="m-0">
                   {renderConnectionsList()}
                 </TabsContent>
-                <TabsContent value={userType === 'researcher' ? 'interviews' : 'collaborations'} className="m-0">
+                <TabsContent value="interviews" className="m-0">
+                  {renderConnectionsList()}
+                </TabsContent>
+                <TabsContent value="collaborations" className="m-0">
                   {renderConnectionsList()}
                 </TabsContent>
               </CardContent>
@@ -721,16 +758,17 @@ const Connections = () => {
                       </div>
                     </div>
                     
-                    {/* Mark as Done button for interviews/collaborations */}
-                    {!isFriendConnection(selectedConnection) && (
+                    {/* End Interview/Collaboration button - only for cross-type connections */}
+                    {!isFriendConnection(selectedConnection) && 
+                     selectedConnection.other_user.user_type !== userType && (
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => handleMarkAsDone(selectedConnection.id)}
-                        className="gap-2"
+                        className="gap-2 text-destructive border-destructive/50 hover:bg-destructive/10"
                       >
-                        <CheckCircle2 className="w-4 h-4" />
-                        Mark as Done
+                        <X className="w-4 h-4" />
+                        {selectedConnection.connection_type === 'interview' ? 'End Interview' : 'End Collaboration'}
                       </Button>
                     )}
                   </div>
