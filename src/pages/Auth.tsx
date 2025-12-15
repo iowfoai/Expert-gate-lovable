@@ -333,9 +333,8 @@ const Auth = () => {
                           </div>
                           
                           <div className="bg-muted/50 p-4 rounded-lg">
-                            <p className="text-sm text-muted-foreground mb-2">Note: After registration, you will undergo a verification system, where an admin must verify you before you can use the expert features, however you may still browse the website. Your expert profile will be verified within the day.<strong>Note:</strong> After registration, you'll be able to upload proof of education 
-                              (degree certificates, institutional verification) from your dashboard. Your expert profile 
-                              will be verified within 3-5 business days.
+                            <p className="text-sm text-muted-foreground">
+                              <strong>Note:</strong> After registration, you will undergo a verification system, where an admin must verify you before you can use the expert features, however you may still browse the website. Your expert profile will be verified within the day.
                             </p>
                           </div>
                         </div>
