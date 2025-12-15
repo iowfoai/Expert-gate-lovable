@@ -142,7 +142,7 @@ serve(async (req: Request): Promise<Response> => {
     console.log(`Sending email to ${recipientEmail}`);
 
     const emailResponse = await resend.emails.send({
-      from: "ExpertConnect <onboarding@resend.dev>",
+      from: "ExpertGate <notifications@expertgate.cc>",
       to: [recipientEmail],
       subject,
       html: htmlContent,
