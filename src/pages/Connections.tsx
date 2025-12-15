@@ -136,6 +136,8 @@ const Connections = () => {
 
       const enrichedConnections: Connection[] = (connectionsData || []).map(c => {
         const isRequester = c.requester_id === userId;
+        // Determine unread status from the connection data itself
+        const hasUnread = isRequester ? c.has_unread_for_requester : c.has_unread_for_recipient;
         return {
           ...c,
           connection_type: c.connection_type || 'friend',
@@ -148,7 +150,7 @@ const Connections = () => {
             user_type: 'researcher'
           },
           is_requester: isRequester,
-          has_unread: unreadConnectionIds.has(c.id)
+          has_unread: hasUnread || false
         };
       });
 
@@ -231,7 +233,7 @@ const Connections = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, userType, searchParams, unreadConnectionIds]);
+  }, [userId, userType, searchParams]);
 
   // Fetch messages for selected connection
   useEffect(() => {
