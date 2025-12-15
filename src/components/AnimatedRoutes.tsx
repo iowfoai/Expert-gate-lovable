@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "./PageTransition";
+import { DeletedAccountGuard } from "./DeletedAccountGuard";
 
 import HomeRouter from "@/components/HomeRouter";
 import Auth from "@/pages/Auth";
@@ -20,27 +21,26 @@ import InterviewHistory from "@/pages/InterviewHistory";
 import Interviews from "@/pages/Interviews";
 import AdminPanel from "@/pages/AdminPanel";
 
-
 const AnimatedRoutes = () => {
   const location = useLocation();
 
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<HomeRouter />} />
+        <Route path="/" element={<DeletedAccountGuard><HomeRouter /></DeletedAccountGuard>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/password-reset" element={<PageTransition><PasswordReset /></PageTransition>} />
-        <Route path="/find-experts" element={<PageTransition><FindExperts /></PageTransition>} />
-        <Route path="/expert-dashboard" element={<PageTransition><ExpertDashboard /></PageTransition>} />
-        <Route path="/expert-home" element={<PageTransition><ExpertHome /></PageTransition>} />
-        <Route path="/experts-directory" element={<PageTransition><ExpertsDirectory /></PageTransition>} />
-        <Route path="/connections" element={<PageTransition><Connections /></PageTransition>} />
-        <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
-        <Route path="/account-settings" element={<PageTransition><AccountSettings /></PageTransition>} />
-        <Route path="/interview-history" element={<PageTransition><InterviewHistory /></PageTransition>} />
-        <Route path="/interviews" element={<PageTransition><Interviews /></PageTransition>} />
+        <Route path="/find-experts" element={<DeletedAccountGuard><PageTransition><FindExperts /></PageTransition></DeletedAccountGuard>} />
+        <Route path="/expert-dashboard" element={<DeletedAccountGuard><PageTransition><ExpertDashboard /></PageTransition></DeletedAccountGuard>} />
+        <Route path="/expert-home" element={<DeletedAccountGuard><PageTransition><ExpertHome /></PageTransition></DeletedAccountGuard>} />
+        <Route path="/experts-directory" element={<DeletedAccountGuard><PageTransition><ExpertsDirectory /></PageTransition></DeletedAccountGuard>} />
+        <Route path="/connections" element={<DeletedAccountGuard><PageTransition><Connections /></PageTransition></DeletedAccountGuard>} />
+        <Route path="/profile" element={<DeletedAccountGuard><PageTransition><Profile /></PageTransition></DeletedAccountGuard>} />
+        <Route path="/account-settings" element={<DeletedAccountGuard><PageTransition><AccountSettings /></PageTransition></DeletedAccountGuard>} />
+        <Route path="/interview-history" element={<DeletedAccountGuard><PageTransition><InterviewHistory /></PageTransition></DeletedAccountGuard>} />
+        <Route path="/interviews" element={<DeletedAccountGuard><PageTransition><Interviews /></PageTransition></DeletedAccountGuard>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-        <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
+        <Route path="/support" element={<DeletedAccountGuard allowSupport><PageTransition><Support /></PageTransition></DeletedAccountGuard>} />
         <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
         <Route path="/admin-panel" element={<PageTransition><AdminPanel /></PageTransition>} />
         
