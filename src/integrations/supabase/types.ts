@@ -250,6 +250,7 @@ export type Database = {
           publications: string | null
           research_field: string[] | null
           research_institution: string | null
+          specific_experience: string | null
           updated_at: string
           user_type: Database["public"]["Enums"]["user_type"]
           verification_notes: string | null
@@ -277,6 +278,7 @@ export type Database = {
           publications?: string | null
           research_field?: string[] | null
           research_institution?: string | null
+          specific_experience?: string | null
           updated_at?: string
           user_type: Database["public"]["Enums"]["user_type"]
           verification_notes?: string | null
@@ -304,11 +306,80 @@ export type Database = {
           publications?: string | null
           research_field?: string[] | null
           research_institution?: string | null
+          specific_experience?: string | null
           updated_at?: string
           user_type?: Database["public"]["Enums"]["user_type"]
           verification_notes?: string | null
           verification_status?: string | null
           years_of_experience?: number | null
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_admin: boolean
+          sender_id: string
+          ticket_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id: string
+          ticket_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          id: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
