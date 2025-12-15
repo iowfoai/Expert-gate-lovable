@@ -694,7 +694,7 @@ const Connections = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Connections List with Tabs */}
           <Card className="lg:col-span-1 overflow-hidden">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
+            <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setSelectedConnection(null); }} className="h-full">
               <CardHeader className="pb-2">
                 <TabsList className="w-full grid grid-cols-3">
                   <TabsTrigger value={userType === 'researcher' ? 'researchers' : 'experts'} className="gap-1 text-xs px-2">
