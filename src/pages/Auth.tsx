@@ -10,7 +10,8 @@ import { Network, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { countries } from "@/lib/countries";
-import { universities } from "@/lib/universities";
+import InstitutionCombobox from "@/components/InstitutionCombobox";
+
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode") || "signin";
@@ -30,6 +31,7 @@ const Auth = () => {
   // Expert-specific fields
   const [educationLevel, setEducationLevel] = useState("");
   const [institution, setInstitution] = useState("");
+  const [organization, setOrganization] = useState("");
   const [fieldOfExpertise, setFieldOfExpertise] = useState("");
   const [yearsOfExperience, setYearsOfExperience] = useState("");
   const [bio, setBio] = useState("");
@@ -275,20 +277,26 @@ const Auth = () => {
                           </div>
                           
                           <div className="space-y-2">
-                            <Label htmlFor="institution">Institution/Organization *</Label>
-                            <Select value={institution} onValueChange={setInstitution}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select your institution" />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-[300px]">
-                                {universities.map(uni => <SelectItem key={uni} value={uni}>
-                                    {uni}
-                                  </SelectItem>)}
-                              </SelectContent>
-                            </Select>
+                            <Label htmlFor="institution">Institution *</Label>
+                            <InstitutionCombobox
+                              value={institution}
+                              onChange={setInstitution}
+                              placeholder="Search institution..."
+                            />
                             <p className="text-xs text-muted-foreground">
-                              If your institution is not listed, select "Other" and specify in your bio.
+                              Search for your institution or type your own if not listed.
                             </p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="organization">Organization (optional)</Label>
+                            <Input
+                              id="organization"
+                              type="text"
+                              placeholder="Department, lab, or company name"
+                              value={organization}
+                              onChange={e => setOrganization(e.target.value)}
+                            />
                           </div>
                           
                           <div className="space-y-2">
