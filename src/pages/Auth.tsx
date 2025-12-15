@@ -11,22 +11,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { countries } from "@/lib/countries";
 import { universities } from "@/lib/universities";
-
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode") || "signin";
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
+  const {
+    toast
+  } = useToast();
   const [userType, setUserType] = useState<"researcher" | "expert">("researcher");
   const [loading, setLoading] = useState(false);
-  
+
   // Form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  
+
   // Expert-specific fields
   const [educationLevel, setEducationLevel] = useState("");
   const [institution, setInstitution] = useState("");
@@ -37,7 +37,7 @@ const Auth = () => {
   const [professionalWebsite, setProfessionalWebsite] = useState("");
   const [country, setCountry] = useState("");
   const [specificExperience, setSpecificExperience] = useState("");
-  
+
   // Researcher-specific fields
   const [researchInstitution, setResearchInstitution] = useState("");
   const [researchField, setResearchField] = useState("");
@@ -45,73 +45,70 @@ const Auth = () => {
   // Check if user is already logged in and redirect based on user type
   useEffect(() => {
     const redirectUser = async (userId: string) => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('user_type')
-        .eq('id', userId)
-        .maybeSingle();
-      
+      const {
+        data: profile
+      } = await supabase.from('profiles').select('user_type').eq('id', userId).maybeSingle();
       if (profile?.user_type === 'expert') {
         navigate('/expert-home');
       } else {
         navigate('/');
       }
     };
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
       if (session) {
         redirectUser(session.user.id);
       }
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: {
+        subscription
+      }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         redirectUser(session.user.id);
       }
     });
-
     return () => subscription.unsubscribe();
   }, [navigate]);
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const {
+        error
+      } = await supabase.auth.signInWithPassword({
         email,
-        password,
+        password
       });
-
       if (error) throw error;
-      
       toast({
         title: "Success",
-        description: "Signed in successfully!",
+        description: "Signed in successfully!"
       });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleForgotPassword = () => {
     navigate("/password-reset");
   };
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (password !== confirmPassword) {
       toast({
         title: "Error",
         description: "Passwords do not match",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
@@ -122,7 +119,7 @@ const Auth = () => {
         toast({
           title: "Error",
           description: "Please fill in all required expert fields",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
@@ -130,23 +127,20 @@ const Auth = () => {
         toast({
           title: "Error",
           description: "Please describe your specific experience (minimum 20 characters)",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
     }
-
     setLoading(true);
-
     try {
       // Build metadata with all user info - the trigger will use this to create the profile
       const metadata: any = {
         full_name: fullName,
         user_type: userType,
         country: country || null,
-        bio: bio || null,
+        bio: bio || null
       };
-
       if (userType === "expert") {
         metadata.education_level = educationLevel;
         metadata.institution = institution;
@@ -159,8 +153,10 @@ const Auth = () => {
         metadata.research_institution = researchInstitution || null;
         metadata.research_field = researchField ? researchField.split(',').map(f => f.trim()) : null;
       }
-
-      const { data, error } = await supabase.auth.signUp({
+      const {
+        data,
+        error
+      } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -168,36 +164,31 @@ const Auth = () => {
           data: metadata
         }
       });
-
       if (error) throw error;
 
       // Send notification email to admin for expert signups
       if (userType === "expert" && data.user) {
         await supabase.functions.invoke("send-expert-signup-notification", {
-          body: { expertId: data.user.id }
+          body: {
+            expertId: data.user.id
+          }
         });
       }
-
       toast({
         title: "Success",
-        description: userType === "expert" 
-          ? "Account created! Your expert profile is pending verification."
-          : "Account created successfully!",
+        description: userType === "expert" ? "Account created! Your expert profile is pending verification." : "Account created successfully!"
       });
-      
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+  return <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <div className="w-full max-w-2xl">
         <Link to="/" className="flex items-center justify-center gap-2 text-xl font-semibold mb-8">
           <Network className="w-6 h-6 text-accent" />
@@ -208,82 +199,43 @@ const Auth = () => {
           <CardHeader>
             <CardTitle>{mode === "signup" ? "Create Account" : "Welcome Back"}</CardTitle>
             <CardDescription>
-              {mode === "signup" 
-                ? "Join ExpertGate to connect with experts or share your expertise" 
-                : "Sign in to your ExpertGate account"}
+              {mode === "signup" ? "Join ExpertGate to connect with experts or share your expertise" : "Sign in to your ExpertGate account"}
             </CardDescription>
           </CardHeader>
           
           <CardContent>
             <form onSubmit={mode === "signup" ? handleSignUp : handleSignIn} className="space-y-4">
-              {mode === "signup" && (
-                <div className="space-y-2">
+              {mode === "signup" && <div className="space-y-2">
                   <Label>I am a...</Label>
                   <div className="grid grid-cols-2 gap-3">
-                    <Button
-                      type="button"
-                      variant={userType === "researcher" ? "default" : "outline"}
-                      onClick={() => setUserType("researcher")}
-                    >
+                    <Button type="button" variant={userType === "researcher" ? "default" : "outline"} onClick={() => setUserType("researcher")}>
                       Researcher
                     </Button>
-                    <Button
-                      type="button"
-                      variant={userType === "expert" ? "default" : "outline"}
-                      onClick={() => setUserType("expert")}
-                    >
+                    <Button type="button" variant={userType === "expert" ? "default" : "outline"} onClick={() => setUserType("expert")}>
                       Expert
                     </Button>
                   </div>
-                </div>
-              )}
+                </div>}
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email *</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <Input id="email" type="email" placeholder="name@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="password">Password *</Label>
-                <Input 
-                  id="password" 
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
               </div>
               
-              {mode === "signup" && (
-                <>
+              {mode === "signup" && <>
                   <div className="space-y-2">
                     <Label htmlFor="confirm-password">Confirm Password *</Label>
-                    <Input 
-                      id="confirm-password" 
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                    />
+                    <Input id="confirm-password" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name *</Label>
-                    <Input 
-                      id="name" 
-                      type="text" 
-                      placeholder="John Doe"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                    />
+                    <Input id="name" type="text" placeholder="John Doe" value={fullName} onChange={e => setFullName(e.target.value)} required />
                   </div>
                   
                   <div className="space-y-2">
@@ -293,17 +245,14 @@ const Auth = () => {
                         <SelectValue placeholder="Select your country" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        {countries.map((c) => (
-                          <SelectItem key={c} value={c}>
+                        {countries.map(c => <SelectItem key={c} value={c}>
                             {c}
-                          </SelectItem>
-                        ))}
+                          </SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                   
-                  {userType === "expert" && (
-                    <>
+                  {userType === "expert" && <>
                       <div className="border-t pt-4">
                         <h3 className="font-semibold mb-4">Expert Verification Information</h3>
                         
@@ -332,11 +281,9 @@ const Auth = () => {
                                 <SelectValue placeholder="Select your institution" />
                               </SelectTrigger>
                               <SelectContent className="max-h-[300px]">
-                                {universities.map((uni) => (
-                                  <SelectItem key={uni} value={uni}>
+                                {universities.map(uni => <SelectItem key={uni} value={uni}>
                                     {uni}
-                                  </SelectItem>
-                                ))}
+                                  </SelectItem>)}
                               </SelectContent>
                             </Select>
                             <p className="text-xs text-muted-foreground">
@@ -346,60 +293,27 @@ const Auth = () => {
                           
                           <div className="space-y-2">
                             <Label htmlFor="expertise">Field of Expertise * (comma-separated)</Label>
-                            <Input 
-                              id="expertise" 
-                              type="text" 
-                              placeholder="Climate Science, Environmental Policy"
-                              value={fieldOfExpertise}
-                              onChange={(e) => setFieldOfExpertise(e.target.value)}
-                              required={userType === "expert"}
-                            />
+                            <Input id="expertise" type="text" placeholder="Climate Science, Environmental Policy" value={fieldOfExpertise} onChange={e => setFieldOfExpertise(e.target.value)} required={userType === "expert"} />
                           </div>
                           
                           <div className="space-y-2">
                             <Label htmlFor="experience">Years of Experience *</Label>
-                            <Input 
-                              id="experience" 
-                              type="number" 
-                              placeholder="10"
-                              value={yearsOfExperience}
-                              onChange={(e) => setYearsOfExperience(e.target.value)}
-                              required={userType === "expert"}
-                            />
+                            <Input id="experience" type="number" placeholder="10" value={yearsOfExperience} onChange={e => setYearsOfExperience(e.target.value)} required={userType === "expert"} />
                           </div>
                           
                           <div className="space-y-2">
                             <Label htmlFor="bio">Professional Bio</Label>
-                            <Textarea 
-                              id="bio" 
-                              placeholder="Brief description of your expertise and background"
-                              value={bio}
-                              onChange={(e) => setBio(e.target.value)}
-                              rows={3}
-                            />
+                            <Textarea id="bio" placeholder="Brief description of your expertise and background" value={bio} onChange={e => setBio(e.target.value)} rows={3} />
                           </div>
                           
                           <div className="space-y-2">
                             <Label htmlFor="publications">Publications/Credentials</Label>
-                            <Textarea 
-                              id="publications" 
-                              placeholder="List your key publications, certifications, or credentials"
-                              value={publications}
-                              onChange={(e) => setPublications(e.target.value)}
-                              rows={3}
-                            />
+                            <Textarea id="publications" placeholder="List your key publications, certifications, or credentials" value={publications} onChange={e => setPublications(e.target.value)} rows={3} />
                           </div>
                           
                           <div className="space-y-2">
                             <Label htmlFor="specific-experience">Specific Experience * (minimum 20 characters)</Label>
-                            <Textarea 
-                              id="specific-experience" 
-                              placeholder="Describe your specific expertise and experience in detail..."
-                              value={specificExperience}
-                              onChange={(e) => setSpecificExperience(e.target.value)}
-                              rows={4}
-                              required={userType === "expert"}
-                            />
+                            <Textarea id="specific-experience" placeholder="Describe your specific expertise and experience in detail..." value={specificExperience} onChange={e => setSpecificExperience(e.target.value)} rows={4} required={userType === "expert"} />
                             <p className="text-xs text-muted-foreground">
                               {specificExperience.length}/20 characters minimum
                             </p>
@@ -407,111 +321,70 @@ const Auth = () => {
                           
                           <div className="space-y-2">
                             <Label htmlFor="website">Professional Website/LinkedIn</Label>
-                            <Input 
-                              id="website" 
-                              type="url" 
-                              placeholder="https://yourwebsite.com"
-                              value={professionalWebsite}
-                              onChange={(e) => setProfessionalWebsite(e.target.value)}
-                            />
+                            <Input id="website" type="url" placeholder="https://yourwebsite.com" value={professionalWebsite} onChange={e => setProfessionalWebsite(e.target.value)} />
                           </div>
                           
                           <div className="bg-muted/50 p-4 rounded-lg">
-                            <p className="text-sm text-muted-foreground mb-2">
-                              <strong>Note:</strong> After registration, you'll be able to upload proof of education 
+                            <p className="text-sm text-muted-foreground mb-2">Note: After registration, you will undergo a verification system, where an admin must verify you before you can use the expert features, however you may still browse the website. Your expert profile will be verified within the day.<strong>Note:</strong> After registration, you'll be able to upload proof of education 
                               (degree certificates, institutional verification) from your dashboard. Your expert profile 
                               will be verified within 3-5 business days.
                             </p>
                           </div>
                         </div>
                       </div>
-                    </>
-                  )}
+                    </>}
                   
-                  {userType === "researcher" && (
-                    <div className="border-t pt-4">
+                  {userType === "researcher" && <div className="border-t pt-4">
                       <h3 className="font-semibold mb-4">Researcher Information</h3>
                       
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label htmlFor="research-institution">Research Institution (optional)</Label>
-                          <Input 
-                            id="research-institution" 
-                            type="text" 
-                            placeholder="University or Organization"
-                            value={researchInstitution}
-                            onChange={(e) => setResearchInstitution(e.target.value)}
-                          />
+                          <Input id="research-institution" type="text" placeholder="University or Organization" value={researchInstitution} onChange={e => setResearchInstitution(e.target.value)} />
                         </div>
                         
                         <div className="space-y-2">
                           <Label htmlFor="research-field">Research Field (comma-separated, optional)</Label>
-                          <Input 
-                            id="research-field" 
-                            type="text" 
-                            placeholder="Climate Science, Public Health"
-                            value={researchField}
-                            onChange={(e) => setResearchField(e.target.value)}
-                          />
+                          <Input id="research-field" type="text" placeholder="Climate Science, Public Health" value={researchField} onChange={e => setResearchField(e.target.value)} />
                         </div>
                         
                         <div className="space-y-2">
                           <Label htmlFor="researcher-bio">Bio (optional)</Label>
-                          <Textarea 
-                            id="researcher-bio" 
-                            placeholder="Brief description of your research interests"
-                            value={bio}
-                            onChange={(e) => setBio(e.target.value)}
-                            rows={3}
-                          />
+                          <Textarea id="researcher-bio" placeholder="Brief description of your research interests" value={bio} onChange={e => setBio(e.target.value)} rows={3} />
                         </div>
                       </div>
-                    </div>
-                  )}
-                </>
-              )}
+                    </div>}
+                </>}
               
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Loading..." : mode === "signup" ? "Create Account" : "Sign In"}
               </Button>
               
-              {mode === "signin" && (
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    className="text-sm text-accent hover:underline"
-                  >
+              {mode === "signin" && <div className="text-center">
+                  <button type="button" onClick={handleForgotPassword} className="text-sm text-accent hover:underline">
                     Forgot password?
                   </button>
-                </div>
-              )}
+                </div>}
             </form>
           </CardContent>
           
           <CardFooter className="flex flex-col gap-4">
             <div className="text-sm text-center text-muted-foreground">
-              {mode === "signup" ? (
-                <>
+              {mode === "signup" ? <>
                   Already have an account?{" "}
                   <Link to="/auth" className="text-accent hover:underline">
                     Sign in
                   </Link>
-                </>
-              ) : (
-                <>
+                </> : <>
                   Don't have an account?{" "}
                   <Link to="/auth?mode=signup" className="text-accent hover:underline">
                     Sign up
                   </Link>
-                </>
-              )}
+                </>}
             </div>
           </CardFooter>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Auth;
