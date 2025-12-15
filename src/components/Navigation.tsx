@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Network, LogOut, User, Settings, History, UserCircle, Users, Home, MessageSquare, Shield } from "lucide-react";
+import { Network, LogOut, User, Settings, History, UserCircle, Users, Home, MessageSquare, Shield, FlaskConical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import {
   DropdownMenu,
@@ -20,6 +21,7 @@ const Navigation = () => {
   const [profileName, setProfileName] = useState<string>("");
   const [userType, setUserType] = useState<string | null>(null);
   const { isAdmin } = useAdminStatus();
+  const { hasUnread } = useUnreadMessages();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -95,10 +97,16 @@ const Navigation = () => {
                 Home
               </Link>
               <Link to="/experts-directory" className={linkClass}>
-                Expert Directory
+                Find Experts
               </Link>
-              <Link to="/connections" className={linkClass}>
+              <Link to="/find-researchers" className={linkClass}>
+                Find Researchers
+              </Link>
+              <Link to="/connections" className={`${linkClass} relative`}>
                 Connections
+                {hasUnread && (
+                  <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
+                )}
               </Link>
               <Link to="/expert-dashboard" className={linkClass}>
                 Dashboard
@@ -109,11 +117,17 @@ const Navigation = () => {
               <Link to="/find-experts" className={linkClass}>
                 Find Experts
               </Link>
+              <Link to="/find-researchers" className={linkClass}>
+                Find Researchers
+              </Link>
               <Link to="/interviews" className={linkClass}>
                 Interviews
               </Link>
-              <Link to="/connections" className={linkClass}>
+              <Link to="/connections" className={`${linkClass} relative`}>
                 Connections
+                {hasUnread && (
+                  <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
+                )}
               </Link>
             </>
           ) : (
@@ -152,13 +166,36 @@ const Navigation = () => {
                       <Home className="w-4 h-4 mr-2" />
                       Expert Home
                     </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/experts-directory")}>
+                    <DropdownMenuItem onClick={() => navigate("/experts-directory")}>
                       <Users className="w-4 h-4 mr-2" />
-                      Expert Directory
+                      Find Experts
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/connections")}>
+                    <DropdownMenuItem onClick={() => navigate("/find-researchers")}>
+                      <FlaskConical className="w-4 h-4 mr-2" />
+                      Find Researchers
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/connections")} className="relative">
                       <MessageSquare className="w-4 h-4 mr-2" />
                       Connections
+                      {hasUnread && (
+                        <span className="absolute right-2 w-2 h-2 bg-destructive rounded-full" />
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                {!isExpert && user && (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate("/find-researchers")}>
+                      <FlaskConical className="w-4 h-4 mr-2" />
+                      Find Researchers
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/connections")} className="relative">
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Connections
+                      {hasUnread && (
+                        <span className="absolute right-2 w-2 h-2 bg-destructive rounded-full" />
+                      )}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
