@@ -130,7 +130,8 @@ const Interviews = () => {
         .insert({
           requester_id: userId,
           recipient_id: interview.expert_id,
-          status: "accepted"
+          status: "accepted",
+          connection_type: "interview"
         })
         .select()
         .single();

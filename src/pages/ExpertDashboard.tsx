@@ -185,7 +185,8 @@ const ExpertDashboard = () => {
         .insert({
           requester_id: request.researcher_id,
           recipient_id: userId,
-          status: 'accepted'
+          status: 'accepted',
+          connection_type: 'interview'
         });
     } else if (existingConnection) {
       // Update to accepted if it exists but isn't accepted
