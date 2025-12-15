@@ -254,11 +254,13 @@ const Connections = () => {
 
     fetchMessages();
     
-    // Mark as read when opening chat (outside of the fetch to avoid dependency issues)
-    if (selectedConnection.has_unread) {
-      markAsRead(selectedConnection.id);
-    }
-
+    // Always mark as read when opening chat
+    markAsRead(selectedConnection.id);
+    
+    // Update local connection state to remove unread indicator
+    setConnections(prev => prev.map(c => 
+      c.id === selectedConnection.id ? { ...c, has_unread: false } : c
+    ));
 
     const channel = supabase
       .channel(`messages-${selectedConnection.id}`)
