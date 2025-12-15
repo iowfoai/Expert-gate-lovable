@@ -4,16 +4,21 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 
 const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [userType, setUserType] = useState<string | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
+  const { isAdmin } = useAdminStatus();
   const [profile, setProfile] = useState({
     full_name: "",
     bio: "",
@@ -55,6 +60,8 @@ const Profile = () => {
           professional_website: data.professional_website || "",
           country: data.country || "",
         });
+        setUserType(data.user_type);
+        setVerificationStatus(data.verification_status);
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -120,7 +127,17 @@ const Profile = () => {
       <main className="flex-1 container mx-auto px-4 py-8">
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle>Profile Settings</CardTitle>
+            <div className="flex items-center gap-3">
+              <CardTitle>Profile Settings</CardTitle>
+              {isAdmin && (
+                <Badge variant="destructive">Admin</Badge>
+              )}
+              {userType === "expert" && verificationStatus && (
+                <Badge variant={verificationStatus === "verified" ? "default" : "secondary"}>
+                  {verificationStatus === "verified" ? "Verified" : "Pending verification"}
+                </Badge>
+              )}
+            </div>
             <CardDescription>Manage your personal information</CardDescription>
           </CardHeader>
           <CardContent>

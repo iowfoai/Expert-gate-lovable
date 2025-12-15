@@ -171,6 +171,13 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // Send notification email to admin for expert signups
+      if (userType === "expert" && data.user) {
+        await supabase.functions.invoke("send-expert-signup-notification", {
+          body: { expertId: data.user.id }
+        });
+      }
+
       toast({
         title: "Success",
         description: userType === "expert" 
