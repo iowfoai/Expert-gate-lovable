@@ -28,7 +28,7 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<HomeRouter />} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
-        <Route path="/reset-password" element={<PageTransition><PasswordReset /></PageTransition>} />
+        <Route path="/password-reset" element={<PageTransition><PasswordReset /></PageTransition>} />
         <Route path="/find-experts" element={<PageTransition><FindExperts /></PageTransition>} />
         <Route path="/expert-dashboard" element={<PageTransition><ExpertDashboard /></PageTransition>} />
         <Route path="/expert-home" element={<PageTransition><ExpertHome /></PageTransition>} />
