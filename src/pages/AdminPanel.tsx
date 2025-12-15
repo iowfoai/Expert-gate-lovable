@@ -170,10 +170,14 @@ const AdminPanel = () => {
       .from("profiles")
       .select("*")
       .eq("user_type", "expert")
-      .in("verification_status", ["pending", "rejected"])
+      .eq("verification_status", "pending")
       .eq("is_deleted", false)
       .order("created_at", { ascending: false });
 
+    if (error) {
+      console.error("Error fetching pending experts:", error);
+    }
+    
     if (!error && data) {
       setPendingExperts(data as PendingExpert[]);
     }
@@ -187,6 +191,10 @@ const AdminPanel = () => {
       .eq("verification_status", "verified")
       .order("created_at", { ascending: false });
 
+    if (error) {
+      console.error("Error fetching verified experts:", error);
+    }
+    
     if (!error && data) {
       setVerifiedExperts(data as VerifiedExpert[]);
     }

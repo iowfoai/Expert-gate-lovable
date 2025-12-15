@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Clock, MessageSquare, Bell, CheckCircle } from "lucide-react";
+import { Users, Clock, MessageSquare, Bell, CheckCircle, AlertTriangle, ShieldCheck } from "lucide-react";
 
 interface PendingRequest {
   id: string;
@@ -48,46 +48,50 @@ const ExpertHome = () => {
 
       setProfile(profileData);
 
-      // Fetch pending connection requests
-      const { data: connectionRequests } = await supabase
-        .from('expert_connections')
-        .select(`
-          id,
-          created_at,
-          requester_id
-        `)
-        .eq('recipient_id', session.user.id)
-        .eq('status', 'pending');
+      // Only fetch connection requests and interview requests if verified
+      if (profileData?.verification_status === 'verified') {
+        // Fetch pending connection requests
+        const { data: connectionRequests } = await supabase
+          .from('expert_connections')
+          .select(`
+            id,
+            created_at,
+            requester_id
+          `)
+          .eq('recipient_id', session.user.id)
+          .eq('status', 'pending');
 
-      if (connectionRequests && connectionRequests.length > 0) {
-        // Fetch requester profiles
-        const requesterIds = connectionRequests.map(r => r.requester_id);
-        const { data: requesterProfiles } = await supabase
-          .from('profiles')
-          .select('id, full_name, field_of_expertise, institution')
-          .in('id', requesterIds);
+        if (connectionRequests && connectionRequests.length > 0) {
+          // Fetch requester profiles
+          const requesterIds = connectionRequests.map(r => r.requester_id);
+          const { data: requesterProfiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, field_of_expertise, institution')
+            .in('id', requesterIds);
 
-        const requestsWithProfiles = connectionRequests.map(req => ({
-          id: req.id,
-          created_at: req.created_at,
-          requester: requesterProfiles?.find(p => p.id === req.requester_id) || {
-            full_name: 'Unknown',
-            field_of_expertise: null,
-            institution: null
-          }
-        }));
+          const requestsWithProfiles = connectionRequests.map(req => ({
+            id: req.id,
+            created_at: req.created_at,
+            requester: requesterProfiles?.find(p => p.id === req.requester_id) || {
+              full_name: 'Unknown',
+              field_of_expertise: null,
+              institution: null
+            }
+          }));
 
-        setPendingRequests(requestsWithProfiles);
+          setPendingRequests(requestsWithProfiles);
+        }
+
+        // Fetch interview request count
+        const { count } = await supabase
+          .from('interview_requests')
+          .select('*', { count: 'exact', head: true })
+          .eq('expert_id', session.user.id)
+          .eq('status', 'pending');
+
+        setInterviewRequests(count || 0);
       }
-
-      // Fetch interview request count
-      const { count } = await supabase
-        .from('interview_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('expert_id', session.user.id)
-        .eq('status', 'pending');
-
-      setInterviewRequests(count || 0);
+      
       setLoading(false);
     };
 
@@ -111,6 +115,84 @@ const ExpertHome = () => {
         <Navigation />
         <main className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show pending verification state
+  if (profile?.verification_status === 'pending') {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-muted/20">
+        <Navigation />
+        <main className="flex-1 container mx-auto px-4 py-12">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-amber-500/10 mb-8">
+              <Clock className="w-12 h-12 text-amber-500" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Verification Pending</h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              Thank you for registering as an expert! Your profile is currently being reviewed by an admin.
+            </p>
+            <Card className="bg-amber-500/5 border-amber-500/20">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" />
+                  <div className="text-left">
+                    <h3 className="font-semibold mb-2">What Happens Next?</h3>
+                    <ul className="text-muted-foreground space-y-2">
+                      <li>• An admin will review your credentials and expertise</li>
+                      <li>• Verification typically takes 1-3 business days</li>
+                      <li>• You'll receive an email once your account is verified</li>
+                      <li>• Until then, you can browse the website but won't appear in expert directories</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <div className="mt-8 flex gap-4 justify-center">
+              <Button variant="outline" onClick={() => navigate('/profile')}>
+                View Profile
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/about')}>
+                Learn More
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show rejected state
+  if (profile?.verification_status === 'rejected') {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-muted/20">
+        <Navigation />
+        <main className="flex-1 container mx-auto px-4 py-12">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-destructive/10 mb-8">
+              <AlertTriangle className="w-12 h-12 text-destructive" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Verification Not Approved</h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              Unfortunately, your expert verification was not approved at this time.
+            </p>
+            <Card className="bg-destructive/5 border-destructive/20">
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">
+                  If you believe this was an error, please contact our support team for assistance.
+                </p>
+              </CardContent>
+            </Card>
+            <div className="mt-8">
+              <Button onClick={() => navigate('/support')}>
+                Contact Support
+              </Button>
+            </div>
+          </div>
         </main>
         <Footer />
       </div>
