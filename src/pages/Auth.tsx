@@ -36,6 +36,7 @@ const Auth = () => {
   const [publications, setPublications] = useState("");
   const [professionalWebsite, setProfessionalWebsite] = useState("");
   const [country, setCountry] = useState("");
+  const [specificExperience, setSpecificExperience] = useState("");
   
   // Researcher-specific fields
   const [researchInstitution, setResearchInstitution] = useState("");
@@ -125,6 +126,14 @@ const Auth = () => {
         });
         return;
       }
+      if (!specificExperience || specificExperience.length < 20) {
+        toast({
+          title: "Error",
+          description: "Please describe your specific experience (minimum 20 characters)",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setLoading(true);
@@ -145,6 +154,7 @@ const Auth = () => {
         metadata.years_of_experience = parseInt(yearsOfExperience);
         metadata.publications = publications || null;
         metadata.professional_website = professionalWebsite || null;
+        metadata.specific_experience = specificExperience;
       } else {
         metadata.research_institution = researchInstitution || null;
         metadata.research_field = researchField ? researchField.split(',').map(f => f.trim()) : null;
@@ -371,6 +381,21 @@ const Auth = () => {
                               onChange={(e) => setPublications(e.target.value)}
                               rows={3}
                             />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="specific-experience">Specific Experience * (minimum 20 characters)</Label>
+                            <Textarea 
+                              id="specific-experience" 
+                              placeholder="Describe your specific expertise and experience in detail..."
+                              value={specificExperience}
+                              onChange={(e) => setSpecificExperience(e.target.value)}
+                              rows={4}
+                              required={userType === "expert"}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              {specificExperience.length}/20 characters minimum
+                            </p>
                           </div>
                           
                           <div className="space-y-2">

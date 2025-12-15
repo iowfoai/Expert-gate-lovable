@@ -10,7 +10,7 @@ import ExpertHome from "@/pages/ExpertHome";
 import ExpertsDirectory from "@/pages/ExpertsDirectory";
 import Connections from "@/pages/Connections";
 import About from "@/pages/About";
-import FAQ from "@/pages/FAQ";
+import Support from "@/pages/Support";
 import Contact from "@/pages/Contact";
 import NotFound from "@/pages/NotFound";
 import PasswordReset from "@/pages/PasswordReset";
@@ -18,6 +18,7 @@ import Profile from "@/pages/Profile";
 import AccountSettings from "@/pages/AccountSettings";
 import InterviewHistory from "@/pages/InterviewHistory";
 import Interviews from "@/pages/Interviews";
+import AdminPanel from "@/pages/AdminPanel";
 
 
 const AnimatedRoutes = () => {
@@ -39,8 +40,9 @@ const AnimatedRoutes = () => {
         <Route path="/interview-history" element={<PageTransition><InterviewHistory /></PageTransition>} />
         <Route path="/interviews" element={<PageTransition><Interviews /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-        <Route path="/faq" element={<PageTransition><FAQ /></PageTransition>} />
+        <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+        <Route path="/admin-panel" element={<PageTransition><AdminPanel /></PageTransition>} />
         
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>

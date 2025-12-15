@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Network, LogOut, User, Settings, History, UserCircle, Users, Home, MessageSquare } from "lucide-react";
+import { Network, LogOut, User, Settings, History, UserCircle, Users, Home, MessageSquare, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import {
   DropdownMenu,
@@ -18,6 +19,7 @@ const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profileName, setProfileName] = useState<string>("");
   const [userType, setUserType] = useState<string | null>(null);
+  const { isAdmin } = useAdminStatus();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -127,8 +129,8 @@ const Navigation = () => {
           <Link to="/about" className={linkClass}>
             About
           </Link>
-          <Link to="/faq" className={linkClass}>
-            FAQ
+          <Link to="/support" className={linkClass}>
+            Support
           </Link>
         </div>
         
@@ -173,6 +175,15 @@ const Navigation = () => {
                   <History className="w-4 h-4 mr-2" />
                   Interview History
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/admin-panel")}>
+                      <Shield className="w-4 h-4 mr-2 text-destructive" />
+                      <span className="text-destructive">Admin Panel</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="w-4 h-4 mr-2" />
