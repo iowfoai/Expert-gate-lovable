@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarIcon, Star, Users, Clock, CheckCircle, XCircle, FileText } from "lucide-react";
+import { Calendar as CalendarIcon, Star, Users, Clock, CheckCircle, XCircle, FileText, MessageCircle, Trash2, AlertTriangle } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { useNavigate } from "react-router-dom";
 import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
@@ -59,6 +59,7 @@ const ExpertDashboard = () => {
   const [pendingRequests, setPendingRequests] = useState<InterviewRequest[]>([]);
   const [upcomingInterviews, setUpcomingInterviews] = useState<InterviewRequest[]>([]);
   const [pastInterviews, setPastInterviews] = useState<InterviewRequest[]>([]);
+  const [missedInterviews, setMissedInterviews] = useState<InterviewRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -100,8 +101,23 @@ const ExpertDashboard = () => {
         }));
 
         // Categorize requests
+        const now = new Date();
         setPendingRequests(requestsWithResearchers.filter(r => r.status === 'pending'));
-        setUpcomingInterviews(requestsWithResearchers.filter(r => r.status === 'accepted' && !r.completed_at));
+        
+        // Upcoming: accepted, not completed, and preferred_date is in the future or no date set
+        setUpcomingInterviews(requestsWithResearchers.filter(r => {
+          if (r.status !== 'accepted' || r.completed_at) return false;
+          if (!r.preferred_date) return true; // No date set, still upcoming
+          return new Date(r.preferred_date) >= now;
+        }));
+        
+        // Missed: accepted, not completed, and preferred_date is in the past
+        setMissedInterviews(requestsWithResearchers.filter(r => {
+          if (r.status !== 'accepted' || r.completed_at) return false;
+          if (!r.preferred_date) return false;
+          return new Date(r.preferred_date) < now;
+        }));
+        
         setPastInterviews(requestsWithResearchers.filter(r => r.status === 'completed' || r.completed_at));
       }
 
@@ -229,6 +245,78 @@ const ExpertDashboard = () => {
       duration: `${request.duration_minutes} minutes`
     });
     setDetailsDialogOpen(true);
+  };
+
+  const handleMarkCompleted = async (requestId: string) => {
+    const interview = upcomingInterviews.find(i => i.id === requestId);
+    if (!interview) return;
+
+    const { error } = await supabase
+      .from('interview_requests')
+      .update({ 
+        status: 'completed',
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', requestId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to mark interview as completed",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUpcomingInterviews(prev => prev.filter(i => i.id !== requestId));
+    setPastInterviews(prev => [...prev, { ...interview, status: 'completed', completed_at: new Date().toISOString() }]);
+    
+    toast({
+      title: "Interview Completed",
+      description: "The interview has been marked as completed"
+    });
+  };
+
+  const handleDeleteMissed = async (requestId: string) => {
+    const { error } = await supabase
+      .from('interview_requests')
+      .update({ status: 'cancelled' })
+      .eq('id', requestId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete missed interview",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setMissedInterviews(prev => prev.filter(i => i.id !== requestId));
+    
+    toast({
+      title: "Interview Removed",
+      description: "The missed interview has been removed"
+    });
+  };
+
+  const handleChatWithResearcher = async (interview: InterviewRequest) => {
+    const { data: connection } = await supabase
+      .from('expert_connections')
+      .select('id')
+      .or(`and(requester_id.eq.${userId},recipient_id.eq.${interview.researcher_id}),and(requester_id.eq.${interview.researcher_id},recipient_id.eq.${userId})`)
+      .eq('status', 'accepted')
+      .maybeSingle();
+    
+    if (connection) {
+      navigate(`/connections?chat=${connection.id}`);
+    } else {
+      toast({
+        title: "Error",
+        description: "Connection not found. Please try accepting the request again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const getInitials = (name: string) => {
@@ -432,7 +520,10 @@ const ExpertDashboard = () => {
             <TabsTrigger value="upcoming">
               Upcoming {upcomingInterviews.length > 0 && `(${upcomingInterviews.length})`}
             </TabsTrigger>
-            <TabsTrigger value="past">Past Interviews</TabsTrigger>
+            <TabsTrigger value="missed">
+              Missed {missedInterviews.length > 0 && `(${missedInterviews.length})`}
+            </TabsTrigger>
+            <TabsTrigger value="past">Completed</TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests">
@@ -540,29 +631,80 @@ const ExpertDashboard = () => {
                             Confirmed
                           </Badge>
                         </div>
-                        <Button 
-                          onClick={async () => {
-                            // Find the connection for this researcher
-                            const { data: connection } = await supabase
-                              .from('expert_connections')
-                              .select('id')
-                              .or(`and(requester_id.eq.${userId},recipient_id.eq.${interview.researcher_id}),and(requester_id.eq.${interview.researcher_id},recipient_id.eq.${userId})`)
-                              .eq('status', 'accepted')
-                              .maybeSingle();
-                            
-                            if (connection) {
-                              navigate(`/connections?chat=${connection.id}`);
-                            } else {
-                              toast({
-                                title: "Error",
-                                description: "Connection not found. Please try accepting the request again.",
-                                variant: "destructive"
-                              });
-                            }
-                          }}
-                        >
-                          Chat with Researcher
-                        </Button>
+                        <div className="flex flex-col gap-2">
+                          <Button 
+                            onClick={() => handleChatWithResearcher(interview)}
+                          >
+                            <MessageCircle className="w-4 h-4 mr-1" />
+                            Chat with Researcher
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => handleMarkCompleted(interview.id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Mark Completed
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="missed">
+            <div className="space-y-4">
+              {missedInterviews.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6 text-center text-muted-foreground">
+                    No missed interviews
+                  </CardContent>
+                </Card>
+              ) : (
+                missedInterviews.map((interview) => (
+                  <Card key={interview.id} className="border-destructive/30">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div className="flex-1 min-w-[200px]">
+                          <h3 className="font-semibold text-lg mb-1">
+                            {interview.researcher?.full_name || 'Unknown Researcher'}
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Research Topic: {interview.research_topic}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                            {interview.preferred_date && (
+                              <div className="flex items-center gap-1 text-destructive">
+                                <AlertTriangle className="w-4 h-4" />
+                                Was scheduled for {new Date(interview.preferred_date).toLocaleDateString()}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {interview.duration_minutes} minutes
+                            </div>
+                          </div>
+                          <Badge variant="destructive" className="mt-2">
+                            Missed
+                          </Badge>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button 
+                            onClick={() => handleChatWithResearcher(interview)}
+                          >
+                            <MessageCircle className="w-4 h-4 mr-1" />
+                            Chat with Researcher
+                          </Button>
+                          <Button 
+                            variant="destructive"
+                            onClick={() => handleDeleteMissed(interview.id)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Remove
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
