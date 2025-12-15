@@ -55,14 +55,55 @@ const ResearchersDirectory = () => {
       const userId = session.user.id;
       setCurrentUserId(userId);
 
-      // Get current user type
-      const { data: profile } = await supabase
+      // Ensure the current user has a profile row (required for connection foreign keys)
+      const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
         .select('user_type')
         .eq('id', userId)
-        .single();
-      
-      setUserType(profile?.user_type || null);
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+      }
+
+      const metaUserType = session.user.user_metadata?.user_type;
+      const safeUserType =
+        metaUserType === 'expert' || metaUserType === 'researcher' ? metaUserType : 'researcher';
+
+      const safeFullName =
+        (typeof session.user.user_metadata?.full_name === 'string' &&
+          session.user.user_metadata.full_name.trim()) ||
+        'User';
+
+      let profile = existingProfile;
+      if (!profile) {
+        const { data: inserted, error: insertProfileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            email: session.user.email ?? '',
+            full_name: safeFullName,
+            user_type: safeUserType,
+          })
+          .select('user_type')
+          .maybeSingle();
+
+        if (insertProfileError) {
+          console.error('Error creating profile:', insertProfileError);
+          toast({
+            title: 'Error',
+            description: insertProfileError.message || 'Failed to set up your account profile.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+
+        profile = inserted;
+      }
+
+      const effectiveUserType = profile?.user_type ?? safeUserType;
+      setUserType(effectiveUserType);
 
       // Fetch all researchers except current user
       const { data: researchersData, error } = await supabase
@@ -81,7 +122,7 @@ const ResearchersDirectory = () => {
       setFilteredResearchers(researchersData || []);
 
       // For researchers: fetch friend connection statuses
-      if (profile?.user_type === 'researcher') {
+      if (effectiveUserType === 'researcher') {
         const { data: connections } = await supabase
           .from('expert_connections')
           .select('requester_id, recipient_id, status, connection_type')
@@ -89,7 +130,7 @@ const ResearchersDirectory = () => {
           .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`);
 
         const statuses: ConnectionStatus = {};
-        connections?.forEach(conn => {
+        connections?.forEach((conn) => {
           const otherUserId = conn.requester_id === userId ? conn.recipient_id : conn.requester_id;
           if (conn.status === 'accepted') {
             statuses[otherUserId] = 'accepted';
@@ -101,14 +142,14 @@ const ResearchersDirectory = () => {
       }
 
       // For experts: fetch collaboration request statuses
-      if (profile?.user_type === 'expert') {
+      if (effectiveUserType === 'expert') {
         const { data: collabs } = await supabase
           .from('collaboration_requests')
           .select('researcher_id, status')
           .eq('expert_id', userId);
 
         const statuses: CollaborationStatus = {};
-        collabs?.forEach(collab => {
+        collabs?.forEach((collab) => {
           if (collab.status === 'accepted') {
             statuses[collab.researcher_id] = 'accepted';
           } else if (collab.status === 'pending') {
@@ -152,7 +193,7 @@ const ResearchersDirectory = () => {
     if (error) {
       toast({
         title: "Error",
-        description: "Failed to send connection request",
+        description: error.message || "Failed to send connection request",
         variant: "destructive"
       });
       return;
