@@ -21,6 +21,10 @@ import AccountSettings from "@/pages/AccountSettings";
 import InterviewHistory from "@/pages/InterviewHistory";
 import Interviews from "@/pages/Interviews";
 import AdminPanel from "@/pages/AdminPanel";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
+import EthicsPolicy from "@/pages/EthicsPolicy";
+import HowItWorks from "@/pages/HowItWorks";
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -46,6 +50,10 @@ const AnimatedRoutes = () => {
         <Route path="/support" element={<DeletedAccountGuard allowSupport><PageTransition><Support /></PageTransition></DeletedAccountGuard>} />
         <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
         <Route path="/admin-panel" element={<PageTransition><AdminPanel /></PageTransition>} />
+        <Route path="/privacy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+        <Route path="/terms" element={<PageTransition><TermsOfService /></PageTransition>} />
+        <Route path="/ethics" element={<PageTransition><EthicsPolicy /></PageTransition>} />
+        <Route path="/how-it-works" element={<PageTransition><HowItWorks /></PageTransition>} />
         
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
