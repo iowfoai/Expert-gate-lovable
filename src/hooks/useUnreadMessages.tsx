@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useUnreadMessages = () => {
@@ -73,7 +73,7 @@ export const useUnreadMessages = () => {
     };
   }, [userId]);
 
-  const markAsRead = async (connectionId: string) => {
+  const markAsRead = useCallback(async (connectionId: string) => {
     if (!userId) return;
 
     // Get the connection to determine if user is requester or recipient
@@ -98,8 +98,8 @@ export const useUnreadMessages = () => {
       newSet.delete(connectionId);
       return newSet;
     });
-    setHasUnread(unreadConnectionIds.size > 1);
-  };
+    setHasUnread(prev => unreadConnectionIds.size > 1);
+  }, [userId, unreadConnectionIds.size]);
 
   return { hasUnread, unreadConnectionIds, markAsRead };
 };

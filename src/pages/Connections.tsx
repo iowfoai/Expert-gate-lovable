@@ -250,14 +250,15 @@ const Connections = () => {
       }
 
       setMessages(data || []);
-      
-      // Mark as read when opening chat
-      if (selectedConnection.has_unread) {
-        markAsRead(selectedConnection.id);
-      }
     };
 
     fetchMessages();
+    
+    // Mark as read when opening chat (outside of the fetch to avoid dependency issues)
+    if (selectedConnection.has_unread) {
+      markAsRead(selectedConnection.id);
+    }
+
 
     const channel = supabase
       .channel(`messages-${selectedConnection.id}`)
@@ -274,7 +275,8 @@ const Connections = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedConnection, userId, markAsRead]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedConnection?.id, userId]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
