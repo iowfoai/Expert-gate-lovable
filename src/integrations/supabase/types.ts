@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      collaboration_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          expert_id: string
+          id: string
+          message: string | null
+          researcher_id: string
+          status: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          expert_id: string
+          id?: string
+          message?: string | null
+          researcher_id: string
+          status?: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          expert_id?: string
+          id?: string
+          message?: string | null
+          researcher_id?: string
+          status?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaboration_requests_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collaboration_requests_researcher_id_fkey"
+            columns: ["researcher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deleted_accounts: {
         Row: {
           deleted_at: string
@@ -46,7 +97,10 @@ export type Database = {
       }
       expert_connections: {
         Row: {
+          connection_type: string
           created_at: string
+          has_unread_for_recipient: boolean | null
+          has_unread_for_requester: boolean | null
           id: string
           recipient_id: string
           requester_id: string
@@ -54,7 +108,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          connection_type?: string
           created_at?: string
+          has_unread_for_recipient?: boolean | null
+          has_unread_for_requester?: boolean | null
           id?: string
           recipient_id: string
           requester_id: string
@@ -62,7 +119,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          connection_type?: string
           created_at?: string
+          has_unread_for_recipient?: boolean | null
+          has_unread_for_requester?: boolean | null
           id?: string
           recipient_id?: string
           requester_id?: string
