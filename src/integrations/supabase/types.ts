@@ -236,6 +236,8 @@ export type Database = {
           country: string | null
           created_at: string
           credentials_document_url: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           education_level: Database["public"]["Enums"]["education_level"] | null
           email: string
           field_of_expertise: string[] | null
@@ -244,6 +246,7 @@ export type Database = {
           institution: string | null
           interviews_remaining: number | null
           is_available: boolean | null
+          is_deleted: boolean
           monthly_interview_limit: number | null
           professional_website: string | null
           profile_image_url: string | null
@@ -262,6 +265,8 @@ export type Database = {
           country?: string | null
           created_at?: string
           credentials_document_url?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           education_level?:
             | Database["public"]["Enums"]["education_level"]
             | null
@@ -272,6 +277,7 @@ export type Database = {
           institution?: string | null
           interviews_remaining?: number | null
           is_available?: boolean | null
+          is_deleted?: boolean
           monthly_interview_limit?: number | null
           professional_website?: string | null
           profile_image_url?: string | null
@@ -290,6 +296,8 @@ export type Database = {
           country?: string | null
           created_at?: string
           credentials_document_url?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           education_level?:
             | Database["public"]["Enums"]["education_level"]
             | null
@@ -300,6 +308,7 @@ export type Database = {
           institution?: string | null
           interviews_remaining?: number | null
           is_available?: boolean | null
+          is_deleted?: boolean
           monthly_interview_limit?: number | null
           professional_website?: string | null
           profile_image_url?: string | null

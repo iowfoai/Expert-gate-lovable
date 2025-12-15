@@ -10,8 +10,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
-import { MessageSquare, UserCheck, Send, X, Check } from "lucide-react";
+import { MessageSquare, UserCheck, Send, X, Check, Trash2, CheckCircle } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SupportTicket {
   id: string;
@@ -47,6 +57,21 @@ interface PendingExpert {
   created_at: string;
 }
 
+interface VerifiedExpert {
+  id: string;
+  full_name: string;
+  email: string;
+  institution: string;
+  field_of_expertise: string[];
+  years_of_experience: number;
+  education_level: string;
+  bio: string;
+  specific_experience: string;
+  verification_status: string;
+  created_at: string;
+  is_deleted: boolean;
+}
+
 const AdminPanel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -62,6 +87,11 @@ const AdminPanel = () => {
   // Expert verification state
   const [pendingExperts, setPendingExperts] = useState<PendingExpert[]>([]);
   const [selectedExpert, setSelectedExpert] = useState<PendingExpert | null>(null);
+  
+  // Verified experts state
+  const [verifiedExperts, setVerifiedExperts] = useState<VerifiedExpert[]>([]);
+  const [selectedVerifiedExpert, setSelectedVerifiedExpert] = useState<VerifiedExpert | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   const [loading, setLoading] = useState(false);
 
@@ -81,6 +111,7 @@ const AdminPanel = () => {
     if (isAdmin) {
       fetchTickets();
       fetchPendingExperts();
+      fetchVerifiedExperts();
     }
   }, [isAdmin]);
 
@@ -140,10 +171,24 @@ const AdminPanel = () => {
       .select("*")
       .eq("user_type", "expert")
       .in("verification_status", ["pending", "rejected"])
+      .eq("is_deleted", false)
       .order("created_at", { ascending: false });
 
     if (!error && data) {
       setPendingExperts(data as PendingExpert[]);
+    }
+  };
+
+  const fetchVerifiedExperts = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_type", "expert")
+      .eq("verification_status", "verified")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setVerifiedExperts(data as VerifiedExpert[]);
     }
   };
 
@@ -237,6 +282,44 @@ const AdminPanel = () => {
 
       setSelectedExpert(null);
       fetchPendingExperts();
+      if (approved) {
+        fetchVerifiedExperts();
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteExpert = async () => {
+    if (!selectedVerifiedExpert || !user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ 
+          is_deleted: true,
+          deleted_by: user.id,
+          deleted_at: new Date().toISOString()
+        })
+        .eq("id", selectedVerifiedExpert.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Expert Deleted",
+        description: "The expert account has been deactivated.",
+      });
+
+      setSelectedVerifiedExpert(null);
+      setShowDeleteDialog(false);
+      fetchVerifiedExperts();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -284,6 +367,13 @@ const AdminPanel = () => {
                   </Badge>
                 )}
               </TabsTrigger>
+              <TabsTrigger value="verified" className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Verified Experts
+                <Badge variant="secondary" className="ml-1">
+                  {verifiedExperts.filter(e => !e.is_deleted).length}
+                </Badge>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="support">
@@ -308,7 +398,7 @@ const AdminPanel = () => {
                                 {ticket.profiles?.full_name || "Unknown"}
                               </p>
                             </div>
-                            <Badge variant={ticket.status === "open" ? "default" : "secondary"}>
+                            <Badge variant={ticket.status === "open" ? "default" : "secondary"} className="capitalize">
                               {ticket.status}
                             </Badge>
                           </div>
@@ -421,7 +511,7 @@ const AdminPanel = () => {
                               <p className="text-sm text-muted-foreground">{expert.email}</p>
                               <p className="text-sm text-muted-foreground">{expert.institution}</p>
                             </div>
-                            <Badge variant={expert.verification_status === "pending" ? "default" : "destructive"}>
+                            <Badge variant={expert.verification_status === "pending" ? "default" : "destructive"} className="capitalize">
                               {expert.verification_status}
                             </Badge>
                           </div>
@@ -447,7 +537,7 @@ const AdminPanel = () => {
                       <CardContent className="space-y-4">
                         <div>
                           <p className="text-sm font-medium">Education Level</p>
-                          <p className="text-muted-foreground">{selectedExpert.education_level || "Not specified"}</p>
+                          <p className="text-muted-foreground capitalize">{selectedExpert.education_level || "Not specified"}</p>
                         </div>
                         <div>
                           <p className="text-sm font-medium">Institution</p>
@@ -512,11 +602,139 @@ const AdminPanel = () => {
                 </div>
               </div>
             </TabsContent>
+
+            <TabsContent value="verified">
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Verified Experts List */}
+                <div>
+                  <h2 className="font-semibold mb-4">Verified Experts</h2>
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                    {verifiedExperts.map((expert) => (
+                      <Card
+                        key={expert.id}
+                        className={`cursor-pointer transition-colors hover:bg-muted/50 ${
+                          selectedVerifiedExpert?.id === expert.id ? "border-primary" : ""
+                        } ${expert.is_deleted ? "opacity-50" : ""}`}
+                        onClick={() => setSelectedVerifiedExpert(expert)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-medium">{expert.full_name}</p>
+                              <p className="text-sm text-muted-foreground">{expert.email}</p>
+                              <p className="text-sm text-muted-foreground">{expert.institution}</p>
+                            </div>
+                            {expert.is_deleted ? (
+                              <Badge variant="destructive">Deleted</Badge>
+                            ) : (
+                              <Badge variant="default">Verified</Badge>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    {verifiedExperts.length === 0 && (
+                      <p className="text-muted-foreground text-sm text-center py-4">
+                        No verified experts
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Verified Expert Details */}
+                <div>
+                  {selectedVerifiedExpert ? (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{selectedVerifiedExpert.full_name}</CardTitle>
+                        <CardDescription>{selectedVerifiedExpert.email}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <p className="text-sm font-medium">Status</p>
+                          {selectedVerifiedExpert.is_deleted ? (
+                            <Badge variant="destructive">Account Deleted</Badge>
+                          ) : (
+                            <Badge variant="default">Active</Badge>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Education Level</p>
+                          <p className="text-muted-foreground capitalize">{selectedVerifiedExpert.education_level || "Not specified"}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Institution</p>
+                          <p className="text-muted-foreground">{selectedVerifiedExpert.institution || "Not specified"}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Field of Expertise</p>
+                          <p className="text-muted-foreground">
+                            {selectedVerifiedExpert.field_of_expertise?.join(", ") || "Not specified"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Years of Experience</p>
+                          <p className="text-muted-foreground">{selectedVerifiedExpert.years_of_experience || "Not specified"}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Bio</p>
+                          <p className="text-muted-foreground">{selectedVerifiedExpert.bio || "Not provided"}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Registration Date</p>
+                          <p className="text-muted-foreground">
+                            {new Date(selectedVerifiedExpert.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+
+                        {!selectedVerifiedExpert.is_deleted && (
+                          <div className="pt-4">
+                            <Button
+                              variant="destructive"
+                              className="w-full"
+                              onClick={() => setShowDeleteDialog(true)}
+                              disabled={loading}
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete Expert
+                            </Button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Card className="h-full flex items-center justify-center min-h-[400px]">
+                      <CardContent className="text-center text-muted-foreground">
+                        <CheckCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>Select an expert to view details</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
       </div>
       
       <Footer />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Expert Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this expert's account? They will no longer be able to access any features except creating support tickets.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteExpert} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -21,10 +21,14 @@ interface InterviewRequest {
   created_at: string;
   expert_id: string;
   researcher_id: string;
-  profiles: {
+  expert_profile?: {
     full_name: string;
     email: string;
-  };
+  } | null;
+  researcher_profile?: {
+    full_name: string;
+    email: string;
+  } | null;
 }
 
 const InterviewHistory = () => {
@@ -54,7 +58,7 @@ const InterviewHistory = () => {
       .from("profiles")
       .select("user_type")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
     if (!error && data) {
       setUserType(data.user_type);
@@ -63,33 +67,51 @@ const InterviewHistory = () => {
 
   const fetchRequests = async (userId: string) => {
     try {
-      let query = supabase
-        .from("interview_requests")
-        .select(`
-          *,
-          profiles!interview_requests_expert_id_fkey (
-            full_name,
-            email
-          )
-        `);
-
-      // Fetch based on user type
+      // Fetch user type first
       const { data: profile } = await supabase
         .from("profiles")
         .select("user_type")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
-      if (profile?.user_type === "expert") {
+      const isExpert = profile?.user_type === "expert";
+
+      // Build query based on user type
+      let query = supabase
+        .from("interview_requests")
+        .select("*");
+
+      if (isExpert) {
         query = query.eq("expert_id", userId);
       } else {
         query = query.eq("researcher_id", userId);
       }
 
-      const { data, error } = await query.order("created_at", { ascending: false });
+      const { data: requestsData, error } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+
+      // Fetch profiles for each request
+      const requestsWithProfiles = await Promise.all(
+        (requestsData || []).map(async (request) => {
+          // Fetch the other party's profile
+          const otherUserId = isExpert ? request.researcher_id : request.expert_id;
+          
+          const { data: otherProfile } = await supabase
+            .from("profiles")
+            .select("full_name, email")
+            .eq("id", otherUserId)
+            .maybeSingle();
+
+          return {
+            ...request,
+            expert_profile: isExpert ? null : otherProfile,
+            researcher_profile: isExpert ? otherProfile : null,
+          };
+        })
+      );
+
+      setRequests(requestsWithProfiles);
     } catch (error) {
       console.error("Error fetching requests:", error);
       toast({
@@ -109,12 +131,20 @@ const InterviewHistory = () => {
       rejected: "destructive",
       completed: "outline",
     };
-    return <Badge variant={variants[status] || "default"}>{status}</Badge>;
+    return <Badge variant={variants[status] || "default"} className="capitalize">{status}</Badge>;
   };
 
   const filterRequests = (status?: string) => {
     if (!status) return requests;
     return requests.filter((req) => req.status === status);
+  };
+
+  const getOtherPartyName = (request: InterviewRequest) => {
+    if (userType === "researcher") {
+      return request.expert_profile?.full_name || "Unknown Expert";
+    } else {
+      return request.researcher_profile?.full_name || "Unknown Researcher";
+    }
   };
 
   if (loading) {
@@ -162,7 +192,7 @@ const InterviewHistory = () => {
                             <CardDescription className="flex items-center gap-2 mt-2">
                               <User className="w-4 h-4" />
                               {userType === "researcher" ? "Expert: " : "Researcher: "}
-                              {request.profiles.full_name}
+                              {getOtherPartyName(request)}
                             </CardDescription>
                           </div>
                           {getStatusBadge(request.status)}
@@ -176,7 +206,7 @@ const InterviewHistory = () => {
                             {request.scheduled_date
                               ? format(new Date(request.scheduled_date), "PPP")
                               : request.preferred_date
-                              ? format(new Date(request.preferred_date), "PPP") + " (preferred)"
+                              ? format(new Date(request.preferred_date), "PPP") + " (Preferred)"
                               : "No date set"}
                           </div>
                           <div className="flex items-center gap-2">
