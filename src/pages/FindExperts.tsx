@@ -23,6 +23,7 @@ interface Expert {
   profile_image_url: string | null;
   country: string | null;
   is_available: boolean | null;
+  verification_status: string | null;
 }
 
 const FindExperts = () => {
@@ -40,8 +41,9 @@ const FindExperts = () => {
     const fetchExperts = async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, is_available')
-        .eq('user_type', 'expert');
+        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, is_available, verification_status')
+        .eq('user_type', 'expert')
+        .eq('verification_status', 'verified');
 
       if (error) {
         console.error('Error fetching experts:', error);

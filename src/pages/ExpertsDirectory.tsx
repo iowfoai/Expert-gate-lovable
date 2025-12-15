@@ -22,6 +22,7 @@ interface Expert {
   years_of_experience: number | null;
   profile_image_url: string | null;
   country: string | null;
+  verification_status: string | null;
 }
 
 interface ConnectionStatus {
@@ -46,8 +47,9 @@ const ExpertsDirectory = () => {
       // Fetch all verified experts except current user
       const { data: expertsData, error } = await supabase
         .from('profiles')
-        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country')
+        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, verification_status')
         .eq('user_type', 'expert')
+        .eq('verification_status', 'verified')
         .neq('id', currentUserId);
 
       if (error) {
