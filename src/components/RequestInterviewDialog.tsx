@@ -35,7 +35,7 @@ const interviewRequestSchema = z.object({
   preferredDate: z.date({
     required_error: "Please select a preferred date",
   }),
-  durationMinutes: z.number().min(1).max(10),
+  durationMinutes: z.number().min(1).max(30),
 });
 
 type InterviewRequestFormValues = z.infer<typeof interviewRequestSchema>;
@@ -62,7 +62,7 @@ const RequestInterviewDialog = ({
     defaultValues: {
       researchTopic: "",
       description: "",
-      durationMinutes: 10,
+      durationMinutes: 30,
     },
   });
 
@@ -301,13 +301,13 @@ const RequestInterviewDialog = ({
                     <Input
                       type="number"
                       min={1}
-                      max={10}
+                      max={30}
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value))}
                     />
                   </FormControl>
                   <FormDescription>
-                    Maximum 10 minutes per interview
+                    Maximum 30 minutes per interview
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
