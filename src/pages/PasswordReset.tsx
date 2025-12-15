@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,8 @@ import { Network } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+
+const emailSchema = z.string().email("Please enter a valid email address");
 
 const passwordSchema = z.object({
   password: z.string()
@@ -22,33 +24,67 @@ const passwordSchema = z.object({
 const PasswordReset = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [hasToken, setHasToken] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  
+  // Check if we have a custom token from our edge function
+  const customToken = searchParams.get('token');
+  // Check if we have a Supabase access token (legacy support)
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const supabaseToken = hashParams.get('access_token');
+  
+  const hasResetToken = customToken || supabaseToken;
 
-  useEffect(() => {
-    // Check if we have an access token in the URL
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
+  const handleRequestReset = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    if (accessToken) {
-      setHasToken(true);
-    } else {
+    const validationResult = emailSchema.safeParse(email);
+    if (!validationResult.success) {
       toast({
-        title: "Invalid Link",
-        description: "This password reset link is invalid or has expired.",
+        title: "Validation Error",
+        description: validationResult.error.errors[0]?.message || "Invalid email",
         variant: "destructive",
       });
-      setTimeout(() => navigate("/auth"), 3000);
+      return;
     }
-  }, [navigate, toast]);
+
+    setLoading(true);
+
+    try {
+      const response = await supabase.functions.invoke('request-password-reset', {
+        body: { 
+          email: email.trim(),
+          redirectUrl: window.location.origin
+        }
+      });
+
+      if (response.error) throw response.error;
+
+      setEmailSent(true);
+      toast({
+        title: "Check your email",
+        description: "If an account exists with this email, you'll receive a password reset link.",
+      });
+    } catch (error: any) {
+      console.error("Reset request error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reset email",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate input
     const validationResult = passwordSchema.safeParse({
       password: newPassword,
       confirmPassword: confirmPassword,
@@ -67,20 +103,41 @@ const PasswordReset = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
+      if (customToken) {
+        // Use our custom edge function
+        const response = await supabase.functions.invoke('reset-password', {
+          body: { 
+            token: customToken,
+            newPassword: newPassword
+          }
+        });
 
-      if (error) throw error;
+        if (response.error) throw response.error;
+        if (response.data?.error) throw new Error(response.data.error);
 
-      toast({
-        title: "Success",
-        description: "Password updated successfully! You can now sign in with your new password.",
-      });
-      
-      // Clean up the URL hash and redirect
-      window.location.href = "/auth?mode=signin";
+        toast({
+          title: "Success",
+          description: "Password updated successfully! You can now sign in with your new password.",
+        });
+        
+        navigate("/auth?mode=signin");
+      } else if (supabaseToken) {
+        // Legacy Supabase token support
+        const { error } = await supabase.auth.updateUser({
+          password: newPassword,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Password updated successfully! You can now sign in with your new password.",
+        });
+        
+        window.location.href = "/auth?mode=signin";
+      }
     } catch (error: any) {
+      console.error("Password reset error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to reset password",
@@ -91,10 +148,110 @@ const PasswordReset = () => {
     }
   };
 
-  if (!hasToken) {
-    return null;
+  // Show email sent confirmation
+  if (emailSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+        <div className="w-full max-w-md">
+          <Link to="/" className="flex items-center justify-center gap-2 text-xl font-semibold mb-8">
+            <Network className="w-6 h-6 text-accent" />
+            <span>ExpertGate</span>
+          </Link>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Check Your Email</CardTitle>
+              <CardDescription>
+                We've sent a password reset link to <strong>{email}</strong>
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Click the link in the email to reset your password. The link will expire in 1 hour.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Didn't receive the email? Check your spam folder or try again.
+              </p>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setEmailSent(false)}
+              >
+                Try Again
+              </Button>
+              <div className="text-center">
+                <Link to="/auth" className="text-sm text-accent hover:underline">
+                  Back to Sign In
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
+  // Show password reset form if we have a token
+  if (hasResetToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+        <div className="w-full max-w-md">
+          <Link to="/" className="flex items-center justify-center gap-2 text-xl font-semibold mb-8">
+            <Network className="w-6 h-6 text-accent" />
+            <span>ExpertGate</span>
+          </Link>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Set New Password</CardTitle>
+              <CardDescription>
+                Enter your new password below
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password *</Label>
+                  <Input 
+                    id="new-password" 
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm New Password *</Label>
+                  <Input 
+                    id="confirm-password" 
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Updating..." : "Update Password"}
+                </Button>
+                
+                <div className="text-center">
+                  <Link to="/auth" className="text-sm text-accent hover:underline">
+                    Back to Sign In
+                  </Link>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Show email input form (request reset)
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <div className="w-full max-w-md">
@@ -105,38 +262,28 @@ const PasswordReset = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Set New Password</CardTitle>
+            <CardTitle>Reset Password</CardTitle>
             <CardDescription>
-              Enter your new password below
+              Enter your email address and we'll send you a link to reset your password
             </CardDescription>
           </CardHeader>
           
           <CardContent>
-            <form onSubmit={handleResetPassword} className="space-y-4">
+            <form onSubmit={handleRequestReset} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="new-password">New Password *</Label>
+                <Label htmlFor="email">Email Address *</Label>
                 <Input 
-                  id="new-password" 
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm New Password *</Label>
-                <Input 
-                  id="confirm-password" 
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  id="email" 
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
               
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Updating..." : "Update Password"}
+                {loading ? "Sending..." : "Send Reset Link"}
               </Button>
               
               <div className="text-center">
