@@ -82,8 +82,8 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("Failed to create reset token");
     }
 
-    // Build reset URL
-    const baseUrl = redirectUrl || "https://research-link-pro.lovable.app";
+    // Build reset URL - always use expertgate.cc domain
+    const baseUrl = "https://expertgate.cc";
     const resetUrl = `${baseUrl}/password-reset?token=${token}`;
 
     // Send email
