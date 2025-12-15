@@ -2,3 +2,6 @@ project_id = "efhfzvyqudvlglfseeci"
 
 [functions.send-interview-notification]
 verify_jwt = true
+
+[functions.send-feedback]
+verify_jwt = false
