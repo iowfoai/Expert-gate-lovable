@@ -27,31 +27,46 @@ serve(async (req: Request): Promise<Response> => {
     // Fetch ticket details
     const { data: ticket, error: ticketError } = await supabase
       .from("support_tickets")
-      .select(`
-        *,
-        profiles:user_id (full_name, email)
-      `)
+      .select("*")
       .eq("id", ticketId)
       .single();
 
     if (ticketError || !ticket) {
+      console.error("Ticket fetch error:", ticketError);
       throw new Error("Failed to fetch ticket details");
     }
+
+    // Fetch user profile separately
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", ticket.user_id)
+      .single();
+
+    if (profileError) {
+      console.error("Profile fetch error:", profileError);
+    }
+
+    // Combine data
+    const ticketWithProfile = {
+      ...ticket,
+      profiles: profile || { full_name: "Unknown", email: "unknown@email.com" }
+    };
 
     if (type === "new_ticket") {
       // Notify admin about new ticket
       const emailResponse = await resend.emails.send({
         from: "ExpertGate Support <support@expertgate.cc>",
         to: [ADMIN_EMAIL],
-        subject: `New Support Ticket: ${ticket.subject}`,
+        subject: `New Support Ticket: ${ticketWithProfile.subject}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #333;">New Support Ticket</h1>
             <p>A new support ticket has been submitted:</p>
             <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p><strong>Subject:</strong> ${ticket.subject}</p>
-              <p><strong>From:</strong> ${ticket.profiles?.full_name} (${ticket.profiles?.email})</p>
-              <p><strong>Created:</strong> ${new Date(ticket.created_at).toLocaleString()}</p>
+              <p><strong>Subject:</strong> ${ticketWithProfile.subject}</p>
+              <p><strong>From:</strong> ${ticketWithProfile.profiles?.full_name} (${ticketWithProfile.profiles?.email})</p>
+              <p><strong>Created:</strong> ${new Date(ticketWithProfile.created_at).toLocaleString()}</p>
             </div>
             <p>
               <a href="https://expertgate.cc/admin-panel" 

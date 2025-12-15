@@ -140,17 +140,38 @@ const AdminPanel = () => {
   }, [selectedTicket?.id]);
 
   const fetchTickets = async () => {
-    const { data, error } = await supabase
+    // Fetch tickets first
+    const { data: ticketsData, error: ticketsError } = await supabase
       .from("support_tickets")
-      .select(`
-        *,
-        profiles:user_id (full_name, email)
-      `)
+      .select("*")
       .order("created_at", { ascending: false });
 
-    if (!error && data) {
-      setTickets(data as any);
+    if (ticketsError) {
+      console.error("Error fetching tickets:", ticketsError);
+      return;
     }
+
+    if (!ticketsData || ticketsData.length === 0) {
+      setTickets([]);
+      return;
+    }
+
+    // Fetch profiles for all ticket users
+    const userIds = [...new Set(ticketsData.map(t => t.user_id))];
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .in("id", userIds);
+
+    const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+
+    // Combine tickets with profiles
+    const ticketsWithProfiles = ticketsData.map(ticket => ({
+      ...ticket,
+      profiles: profilesMap.get(ticket.user_id) || { full_name: "Unknown", email: "" }
+    }));
+
+    setTickets(ticketsWithProfiles as any);
   };
 
   const fetchMessages = async (ticketId: string) => {
