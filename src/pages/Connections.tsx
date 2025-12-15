@@ -437,9 +437,10 @@ const Connections = () => {
           c.other_user.user_type === 'expert' && c.connection_type === 'friend'
         );
       } else {
-        // Collaboration connections with researchers
+        // Collaboration AND interview connections with researchers
         return connections.filter(c => 
-          c.other_user.user_type === 'researcher' && c.connection_type === 'collaboration'
+          c.other_user.user_type === 'researcher' && 
+          (c.connection_type === 'collaboration' || c.connection_type === 'interview' || c.connection_type === 'friend')
         );
       }
     }
