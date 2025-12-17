@@ -21,38 +21,32 @@ const HowItWorks = () => {
     {
       icon: UserPlus,
       title: "1. Create Your Account",
-      description: "Sign up as a researcher with your institutional email. Tell us about your research interests and institution.",
-      image: "/placeholder.svg"
+      description: "Sign up as a researcher with your institutional email. Tell us about your research interests and institution."
     },
     {
       icon: Search,
       title: "2. Find Experts",
-      description: "Browse our directory of verified experts. Filter by field of expertise, experience, and availability.",
-      image: "/placeholder.svg"
+      description: "Browse our directory of verified experts. Filter by field of expertise, experience, and availability."
     },
     {
       icon: MessageSquare,
       title: "3. Connect & Message",
-      description: "Send connection requests to experts you'd like to interview. Use our messaging system to discuss your research.",
-      image: "/placeholder.svg"
+      description: "Send connection requests to experts you'd like to interview. Use our messaging system to discuss your research."
     },
     {
       icon: Calendar,
       title: "4. Request Interviews",
-      description: "Submit detailed interview requests with your questions and preferred times. Experts can accept and schedule.",
-      image: "/placeholder.svg"
+      description: "Submit detailed interview requests with your questions and preferred times. Experts can accept and schedule."
     },
     {
       icon: CheckCircle,
       title: "5. Conduct Interviews",
-      description: "Meet with experts at scheduled times. Our platform helps you stay organized with interview history.",
-      image: "/placeholder.svg"
+      description: "Meet with experts at scheduled times. Our platform helps you stay organized with interview history."
     },
     {
       icon: Star,
       title: "6. Rate & Review",
-      description: "After interviews, provide feedback to help maintain quality and recognize helpful experts.",
-      image: "/placeholder.svg"
+      description: "After interviews, provide feedback to help maintain quality and recognize helpful experts."
     }
   ];
 
@@ -60,38 +54,32 @@ const HowItWorks = () => {
     {
       icon: UserPlus,
       title: "1. Sign Up as Expert",
-      description: "Create your expert profile with your credentials, expertise areas, and professional background.",
-      image: "/placeholder.svg"
+      description: "Create your expert profile with your credentials, expertise areas, and professional background."
     },
     {
       icon: Shield,
       title: "2. Get Verified",
-      description: "Submit your credentials for verification. Our team reviews your qualifications to ensure quality.",
-      image: "/placeholder.svg"
+      description: "Submit your credentials for verification. Our team reviews your qualifications to ensure quality."
     },
     {
       icon: Clock,
       title: "3. Set Availability",
-      description: "Configure your monthly interview limits and availability status. Control when you're open to requests.",
-      image: "/placeholder.svg"
+      description: "Configure your monthly interview limits and availability status. Control when you're open to requests."
     },
     {
       icon: MessageSquare,
       title: "4. Receive Requests",
-      description: "Researchers will send connection and interview requests. Review them and decide which to accept.",
-      image: "/placeholder.svg"
+      description: "Researchers will send connection and interview requests. Review them and decide which to accept."
     },
     {
       icon: Calendar,
       title: "5. Schedule & Meet",
-      description: "Accept interview requests and schedule meetings. Help researchers with your valuable expertise.",
-      image: "/placeholder.svg"
+      description: "Accept interview requests and schedule meetings. Help researchers with your valuable expertise."
     },
     {
       icon: Users,
       title: "6. Build Your Network",
-      description: "Connect with researchers and other experts. Expand your professional network in your field.",
-      image: "/placeholder.svg"
+      description: "Connect with researchers and other experts. Expand your professional network in your field."
     }
   ];
 
@@ -157,27 +145,21 @@ const HowItWorks = () => {
               <h2 className="text-3xl font-bold">For Researchers</h2>
             </div>
             
-            <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {researcherSteps.map((step, index) => (
-                <div key={index} className="flex flex-col md:flex-row gap-6 items-start">
-                  <Card className="flex-1 border-2">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                          <step.icon className="w-6 h-6 text-accent" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                          <p className="text-muted-foreground">{step.description}</p>
-                        </div>
+                <Card key={index} className="border-2">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                        <step.icon className="w-6 h-6 text-accent" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <div className="w-full md:w-80 aspect-video bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                    <p className="text-sm text-muted-foreground">Screenshot placeholder</p>
-                  </div>
-                </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                        <p className="text-muted-foreground">{step.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </section>
@@ -191,27 +173,21 @@ const HowItWorks = () => {
               <h2 className="text-3xl font-bold">For Experts</h2>
             </div>
             
-            <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {expertSteps.map((step, index) => (
-                <div key={index} className="flex flex-col md:flex-row gap-6 items-start">
-                  <Card className="flex-1 border-2">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                          <step.icon className="w-6 h-6 text-accent" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                          <p className="text-muted-foreground">{step.description}</p>
-                        </div>
+                <Card key={index} className="border-2">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                        <step.icon className="w-6 h-6 text-accent" />
                       </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <div className="w-full md:w-80 aspect-video bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                    <p className="text-sm text-muted-foreground">Screenshot placeholder</p>
-                  </div>
-                </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                        <p className="text-muted-foreground">{step.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </section>
