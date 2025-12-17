@@ -10,7 +10,8 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
-import { Search, UserPlus, Check, Clock, Users, GraduationCap, Building2 } from "lucide-react";
+import { Search, UserPlus, Check, Clock, Users, GraduationCap, Building2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Expert {
   id: string;
@@ -44,6 +45,14 @@ const ExpertsDirectory = () => {
     if (authLoading || !currentUserId) return;
     
     const fetchData = async () => {
+      // First check if current user is verified
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('verification_status')
+        .eq('id', currentUserId)
+        .single();
+
+      setCurrentUserVerified(currentProfile?.verification_status === 'verified');
 
       // Fetch all verified experts except current user
       const { data: expertsData, error } = await supabase
@@ -99,6 +108,15 @@ const ExpertsDirectory = () => {
   const sendConnectionRequest = async (expertId: string) => {
     if (!currentUserId) return;
 
+    if (!currentUserVerified) {
+      toast({
+        title: "Verification Required",
+        description: "Your account must be verified before you can connect with other experts.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const { error } = await supabase
       .from('expert_connections')
       .insert({
@@ -128,6 +146,15 @@ const ExpertsDirectory = () => {
   };
 
   const acceptConnection = async (expertId: string) => {
+    if (!currentUserVerified) {
+      toast({
+        title: "Verification Required",
+        description: "Your account must be verified before you can accept connection requests.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const { error } = await supabase
       .from('expert_connections')
       .update({ status: 'accepted' })
@@ -197,6 +224,16 @@ const ExpertsDirectory = () => {
             Connect with fellow experts, share knowledge, and expand your professional network
           </p>
         </div>
+
+        {/* Verification Warning */}
+        {!currentUserVerified && (
+          <Alert variant="destructive" className="max-w-2xl mx-auto mb-8">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Your account is pending verification. You can browse the directory but cannot connect with other experts until your account is verified.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Search */}
         <div className="max-w-xl mx-auto mb-10">
