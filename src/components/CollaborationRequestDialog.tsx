@@ -61,6 +61,23 @@ const CollaborationRequestDialog = ({
       return;
     }
 
+    // Check if user is verified
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('verification_status')
+      .eq('id', session.user.id)
+      .single();
+
+    if (profile?.verification_status !== 'verified') {
+      toast({
+        title: "Verification Required",
+        description: "Your account must be verified before you can send collaboration requests.",
+        variant: "destructive"
+      });
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase
       .from('collaboration_requests')
       .insert({
