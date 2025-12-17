@@ -38,6 +38,7 @@ const ExpertsDirectory = () => {
   const [connectionStatuses, setConnectionStatuses] = useState<ConnectionStatus>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [currentUserVerified, setCurrentUserVerified] = useState(false);
 
   useEffect(() => {
     if (authLoading || !currentUserId) return;
