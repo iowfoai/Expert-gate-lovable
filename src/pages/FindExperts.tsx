@@ -13,6 +13,8 @@ import { Search, Star, MapPin, Calendar, Users, Globe } from "lucide-react";
 import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
+import { EditableText } from "@/components/EditableText";
+import { EditableProfileField } from "@/components/EditableProfileField";
 
 interface Expert {
   id: string;
@@ -134,10 +136,18 @@ const FindExperts = () => {
       
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">Find Your Expert</h1>
-          <p className="text-muted-foreground">
-            Search through our verified experts and connect for your research needs
-          </p>
+          <EditableText 
+            contentKey="find_experts_title" 
+            defaultValue="Find Your Expert" 
+            as="h1" 
+            className="text-4xl font-bold mb-4" 
+          />
+          <EditableText 
+            contentKey="find_experts_subtitle" 
+            defaultValue="Search through our verified experts and connect for your research needs" 
+            as="p" 
+            className="text-muted-foreground" 
+          />
         </div>
         
         {/* Search Bar */}
@@ -249,13 +259,24 @@ const FindExperts = () => {
                     </Avatar>
                     <div className="flex-1">
                       <Link to={`/expert/${expert.id}`} className="font-semibold text-lg hover:text-accent transition-colors hover:underline">
-                        {expert.full_name}
+                        <EditableProfileField
+                          userId={expert.id}
+                          field="full_name"
+                          value={expert.full_name}
+                          className="font-semibold text-lg"
+                        />
                       </Link>
                       {expert.education_level && (
                         <p className="text-sm text-muted-foreground">{getEducationLabel(expert.education_level)}</p>
                       )}
                       {expert.institution && (
-                        <p className="text-sm text-muted-foreground">{expert.institution}</p>
+                        <EditableProfileField
+                          userId={expert.id}
+                          field="institution"
+                          value={expert.institution}
+                          as="p"
+                          className="text-sm text-muted-foreground"
+                        />
                       )}
                     </div>
                   </div>
