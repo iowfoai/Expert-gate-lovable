@@ -5,6 +5,17 @@ const Footer = () => {
   return (
     <footer className="bg-muted border-t border-border mt-20">
       <div className="container mx-auto px-4 py-12">
+        {/* Beta Notice - Top */}
+        <div className="mb-8 pb-8 border-b border-border text-center">
+          <p className="text-xs italic text-muted-foreground/70 max-w-2xl mx-auto">
+            This product is still in beta. Please{" "}
+            <Link to="/support" className="underline hover:text-accent">submit any feedback</Link>{" "}
+            if you have suggestions or encounter any problems. You may also{" "}
+            <Link to="/support" className="underline hover:text-accent">create a support ticket</Link>{" "}
+            if you have issues with your account.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <Link to="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
@@ -35,8 +46,18 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/how-it-works" className="text-muted-foreground hover:text-accent transition-colors">
-                  How It Works
+                <Link to="/research-collab" className="text-muted-foreground hover:text-accent transition-colors">
+                  Research Collab
+                </Link>
+              </li>
+              <li>
+                <Link to="/experts-directory" className="text-muted-foreground hover:text-accent transition-colors">
+                  Expert Directory
+                </Link>
+              </li>
+              <li>
+                <Link to="/connections" className="text-muted-foreground hover:text-accent transition-colors">
+                  Connections & Chats
                 </Link>
               </li>
             </ul>
@@ -80,14 +101,7 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="mt-8 pt-8 border-t border-border text-center space-y-3">
-          <p className="text-xs italic text-muted-foreground/70 max-w-2xl mx-auto">
-            This product is still in beta. Please{" "}
-            <Link to="/support" className="underline hover:text-accent">submit any feedback</Link>{" "}
-            if you have suggestions or encounter any problems. You may also{" "}
-            <Link to="/support" className="underline hover:text-accent">create a support ticket</Link>{" "}
-            if you have issues with your account.
-          </p>
+        <div className="mt-8 pt-8 border-t border-border text-center">
           <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} ExpertGate. All rights reserved.</p>
         </div>
       </div>

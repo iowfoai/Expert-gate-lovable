@@ -8,6 +8,13 @@ const TermsOfService = () => {
       
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
+          {/* Beta Notice */}
+          <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 mb-8">
+            <p className="text-sm text-muted-foreground italic text-center">
+              This product is currently in beta. Policies may be updated as we continue to develop and improve the platform.
+            </p>
+          </div>
+
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Terms of Service</h1>
           <p className="text-muted-foreground mb-8">Last updated: December 2024</p>
           
