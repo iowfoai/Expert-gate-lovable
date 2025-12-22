@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Network, Instagram } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { EditableText } from "@/components/EditableText";
 
 const Footer = () => {
   const [userType, setUserType] = useState<string | null>(null);
@@ -53,11 +54,11 @@ const Footer = () => {
         {/* Beta Notice - Top */}
         <div className="mb-8 pb-8 border-b border-border text-center">
           <p className="text-xs italic text-muted-foreground/70 max-w-2xl mx-auto">
-            This product is still in beta. Please{" "}
-            <Link to="/support" className="underline hover:text-accent">submit any feedback</Link>{" "}
-            if you have suggestions or encounter any problems. You may also{" "}
-            <Link to="/support" className="underline hover:text-accent">create a support ticket</Link>{" "}
-            if you have issues with your account.
+            <EditableText 
+              contentKey="footer.beta.notice" 
+              defaultValue="This product is still in beta. Please submit any feedback if you have suggestions or encounter any problems. You may also create a support ticket if you have issues with your account."
+              multiline
+            />
           </p>
         </div>
 
@@ -65,10 +66,10 @@ const Footer = () => {
           <div>
             <Link to="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
               <Network className="w-5 h-5 text-accent" />
-              <span>ExpertGate</span>
+              <span><EditableText contentKey="footer.brand.name" defaultValue="ExpertGate" /></span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
-              Bridging Researchers & Experts conveniently & efficiently.
+              <EditableText contentKey="footer.brand.tagline" defaultValue="Bridging Researchers & Experts conveniently & efficiently." />
             </p>
             <div className="flex gap-3">
               <a 
@@ -83,7 +84,9 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Platform</h4>
+            <h4 className="font-semibold mb-4">
+              <EditableText contentKey="footer.platform.title" defaultValue="Platform" />
+            </h4>
             <ul className="space-y-2 text-sm">
               {/* Only researchers can see Interview Experts */}
               {isResearcher && (
@@ -117,7 +120,9 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Resources</h4>
+            <h4 className="font-semibold mb-4">
+              <EditableText contentKey="footer.resources.title" defaultValue="Resources" />
+            </h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/about" className="text-muted-foreground hover:text-accent transition-colors">
@@ -133,7 +138,9 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
+            <h4 className="font-semibold mb-4">
+              <EditableText contentKey="footer.legal.title" defaultValue="Legal" />
+            </h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/ethics" className="text-muted-foreground hover:text-accent transition-colors">
@@ -155,7 +162,9 @@ const Footer = () => {
         </div>
         
         <div className="mt-8 pt-8 border-t border-border text-center">
-          <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} ExpertGate. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">
+            <EditableText contentKey="footer.copyright" defaultValue={`© ${new Date().getFullYear()} ExpertGate. All rights reserved.`} />
+          </p>
         </div>
       </div>
     </footer>
