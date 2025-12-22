@@ -24,6 +24,7 @@ interface Researcher {
   profile_image_url: string | null;
   country: string | null;
   preferred_languages: string[] | null;
+  is_test_account: boolean;
 }
 
 interface ConnectionStatus {
@@ -179,7 +180,7 @@ const ResearchersDirectory = () => {
       // Fetch all researchers except current user
       const { data: researchersData, error } = await supabase
         .from('profiles')
-        .select('id, full_name, bio, research_institution, research_field, profile_image_url, country, preferred_languages')
+        .select('id, full_name, bio, research_institution, research_field, profile_image_url, country, preferred_languages, is_test_account')
         .eq('user_type', 'researcher')
         .neq('id', userId);
 
@@ -511,6 +512,12 @@ const ResearchersDirectory = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredResearchers.map((researcher) => (
               <Card key={researcher.id} className="hover:border-accent/50 transition-all hover:shadow-lg relative">
+                {/* Admin-only test account label */}
+                {isAdmin && researcher.is_test_account && (
+                  <div className="absolute top-2 left-2 z-10">
+                    <span className="text-xs italic text-muted-foreground bg-background/80 px-2 py-1 rounded">Visible only to admins</span>
+                  </div>
+                )}
                 {/* Admin delete button */}
                 {isAdmin && (
                   <button
