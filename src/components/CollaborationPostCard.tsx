@@ -3,9 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Megaphone, Clock, Users, Check, Loader2 } from "lucide-react";
+import { Megaphone, Clock, Users, Check, Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 import ApplyToPostDialog from "./ApplyToPostDialog";
 import ViewApplicationsDialog from "./ViewApplicationsDialog";
 
@@ -37,8 +38,10 @@ interface CollaborationPostCardProps {
 
 const CollaborationPostCard = ({ post, currentUserId, onRefresh }: CollaborationPostCardProps) => {
   const { toast } = useToast();
+  const { isAdmin } = useAdminStatus();
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);
   const [viewApplicationsOpen, setViewApplicationsOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const isAuthor = currentUserId === post.author_id;
   const getInitials = (name: string) =>
@@ -51,9 +54,51 @@ const CollaborationPostCard = ({ post, currentUserId, onRefresh }: Collaboration
 
   const institution = post.author?.institution || post.author?.research_institution;
 
+  const handleAdminDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isAdmin) return;
+    
+    setDeleting(true);
+    const { error } = await supabase
+      .from("collaboration_posts")
+      .delete()
+      .eq("id", post.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete post",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Post Deleted",
+        description: "The collaboration post has been removed",
+      });
+      onRefresh();
+    }
+    setDeleting(false);
+  };
+
   return (
     <>
-      <Card className="hover:border-accent/50 transition-all hover:shadow-lg">
+      <Card className="hover:border-accent/50 transition-all hover:shadow-lg relative">
+        {/* Admin delete button */}
+        {isAdmin && (
+          <button
+            onClick={handleAdminDelete}
+            disabled={deleting}
+            className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+            title="Delete post (Admin)"
+          >
+            {deleting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <X className="w-4 h-4" />
+            )}
+          </button>
+        )}
+        
         <CardContent className="p-5">
           <div className="flex items-start gap-4 mb-3">
             <div className="p-2 rounded-lg bg-accent/10">

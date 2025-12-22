@@ -10,7 +10,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, X, Loader2, Eye, ArrowLeft, GraduationCap, Building, Globe, Languages, Briefcase } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Check, X, Loader2, Eye, ArrowLeft, GraduationCap, Building, Globe, Languages, Briefcase, Users, UserMinus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { CollaborationPost } from "./CollaborationPostCard";
@@ -41,6 +42,14 @@ interface Application {
   applicant?: ApplicantProfile;
 }
 
+interface GroupMember {
+  id: string;
+  user_id: string;
+  role: string;
+  joined_at: string;
+  profile?: ApplicantProfile;
+}
+
 interface ViewApplicationsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -57,12 +66,15 @@ const ViewApplicationsDialog = ({
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [members, setMembers] = useState<GroupMember[]>([]);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [viewingApplicant, setViewingApplicant] = useState<ApplicantProfile | null>(null);
+  const [activeTab, setActiveTab] = useState("applications");
 
   useEffect(() => {
     if (open) {
       fetchApplications();
+      fetchMembers();
     }
   }, [open, post.id]);
 
@@ -101,6 +113,49 @@ const ViewApplicationsDialog = ({
     }
 
     setLoading(false);
+  };
+
+  const fetchMembers = async () => {
+    // First get the group for this post
+    const { data: group } = await supabase
+      .from("project_groups")
+      .select("id")
+      .eq("post_id", post.id)
+      .maybeSingle();
+
+    if (!group) {
+      setMembers([]);
+      return;
+    }
+
+    const { data: membersData, error } = await supabase
+      .from("project_group_members")
+      .select("*")
+      .eq("group_id", group.id);
+
+    if (error) {
+      console.error("Error fetching members:", error);
+      return;
+    }
+
+    if (membersData && membersData.length > 0) {
+      const userIds = membersData.map((m) => m.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, profile_image_url, user_type, institution, research_institution")
+        .in("id", userIds);
+
+      const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+
+      const enriched = membersData.map((member) => ({
+        ...member,
+        profile: profileMap.get(member.user_id),
+      }));
+
+      setMembers(enriched);
+    } else {
+      setMembers([]);
+    }
   };
 
   const handleAccept = async (application: Application) => {
@@ -186,6 +241,7 @@ const ViewApplicationsDialog = ({
 
     setProcessingId(null);
     fetchApplications();
+    fetchMembers();
     onUpdate();
   };
 
@@ -209,6 +265,41 @@ const ViewApplicationsDialog = ({
         description: "The application has been rejected",
       });
       fetchApplications();
+    }
+
+    setProcessingId(null);
+  };
+
+  const handleKickMember = async (member: GroupMember) => {
+    if (member.role === "owner") {
+      toast({
+        title: "Cannot Remove",
+        description: "The owner cannot be removed from the group",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setProcessingId(member.id);
+
+    const { error } = await supabase
+      .from("project_group_members")
+      .delete()
+      .eq("id", member.id);
+
+    if (error) {
+      console.error("Error removing member:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove member",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Member Removed",
+        description: `${member.profile?.full_name || "Member"} has been removed from the group`,
+      });
+      fetchMembers();
     }
 
     setProcessingId(null);
@@ -340,115 +431,187 @@ const ViewApplicationsDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Applications</DialogTitle>
+          <DialogTitle>Manage Collaboration</DialogTitle>
           <DialogDescription>
-            Review applications for "{post.title}"
+            "{post.title}"
           </DialogDescription>
         </DialogHeader>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-accent" />
-          </div>
-        ) : applications.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No applications yet</p>
-          </div>
-        ) : (
-          <ScrollArea className="max-h-[400px]">
-            {pendingApps.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm font-medium text-muted-foreground mb-2">Pending</p>
-                <div className="space-y-3">
-                  {pendingApps.map((app) => (
-                    <div key={app.id} className="p-3 rounded-lg border bg-muted/30">
-                      <div className="flex items-center gap-3 mb-2">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={app.applicant?.profile_image_url || ""} />
-                          <AvatarFallback>
-                            {getInitials(app.applicant?.full_name || "U")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium">{app.applicant?.full_name}</p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {app.applicant?.institution || app.applicant?.research_institution}
-                          </p>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full grid grid-cols-2">
+            <TabsTrigger value="applications" className="gap-1">
+              <Users className="w-4 h-4" />
+              Applications
+              {pendingApps.length > 0 && (
+                <Badge variant="destructive" className="ml-1 text-xs px-1.5 py-0">
+                  {pendingApps.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="members" className="gap-1">
+              <Users className="w-4 h-4" />
+              Members ({members.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="applications" className="mt-4">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-accent" />
+              </div>
+            ) : applications.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No applications yet</p>
+              </div>
+            ) : (
+              <ScrollArea className="max-h-[350px]">
+                {pendingApps.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Pending</p>
+                    <div className="space-y-3">
+                      {pendingApps.map((app) => (
+                        <div key={app.id} className="p-3 rounded-lg border bg-muted/30">
+                          <div className="flex items-center gap-3 mb-2">
+                            <Avatar className="w-10 h-10">
+                              <AvatarImage src={app.applicant?.profile_image_url || ""} />
+                              <AvatarFallback>
+                                {getInitials(app.applicant?.full_name || "U")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium">{app.applicant?.full_name}</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {app.applicant?.institution || app.applicant?.research_institution}
+                              </p>
+                            </div>
+                            <Badge variant="secondary" className="text-xs capitalize">
+                              {app.applicant?.user_type}
+                            </Badge>
+                          </div>
+                          {app.message && (
+                            <p className="text-sm text-muted-foreground mb-3">{app.message}</p>
+                          )}
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => app.applicant && setViewingApplicant(app.applicant)}
+                            >
+                              <Eye className="w-4 h-4 mr-1" /> Details
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleAccept(app)}
+                              disabled={processingId === app.id}
+                            >
+                              {processingId === app.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <Check className="w-4 h-4 mr-1" /> Accept
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleReject(app.id)}
+                              disabled={processingId === app.id}
+                            >
+                              <X className="w-4 h-4 mr-1" /> Reject
+                            </Button>
+                          </div>
                         </div>
-                        <Badge variant="secondary" className="text-xs capitalize">
-                          {app.applicant?.user_type}
-                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {processedApps.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Processed</p>
+                    <div className="space-y-2">
+                      {processedApps.map((app) => (
+                        <div key={app.id} className="p-3 rounded-lg border">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={app.applicant?.profile_image_url || ""} />
+                              <AvatarFallback className="text-xs">
+                                {getInitials(app.applicant?.full_name || "U")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium">{app.applicant?.full_name}</p>
+                            </div>
+                            <Badge
+                              variant={app.status === "accepted" ? "default" : "secondary"}
+                              className="text-xs capitalize"
+                            >
+                              {app.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </ScrollArea>
+            )}
+          </TabsContent>
+
+          <TabsContent value="members" className="mt-4">
+            {members.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>No members yet</p>
+                <p className="text-sm">Accept applications to add members</p>
+              </div>
+            ) : (
+              <ScrollArea className="max-h-[350px]">
+                <div className="space-y-2">
+                  {members.map((member) => (
+                    <div key={member.id} className="p-3 rounded-lg border flex items-center gap-3">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={member.profile?.profile_image_url || ""} />
+                        <AvatarFallback>
+                          {getInitials(member.profile?.full_name || "U")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium">{member.profile?.full_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {member.profile?.institution || member.profile?.research_institution}
+                        </p>
                       </div>
-                      {app.message && (
-                        <p className="text-sm text-muted-foreground mb-3">{app.message}</p>
-                      )}
-                      <div className="flex gap-2">
+                      <Badge 
+                        variant={member.role === "owner" ? "default" : "secondary"}
+                        className="text-xs capitalize"
+                      >
+                        {member.role}
+                      </Badge>
+                      {member.role !== "owner" && (
                         <Button
                           size="sm"
-                          variant="secondary"
-                          onClick={() => app.applicant && setViewingApplicant(app.applicant)}
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleKickMember(member)}
+                          disabled={processingId === member.id}
                         >
-                          <Eye className="w-4 h-4 mr-1" /> Details
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleAccept(app)}
-                          disabled={processingId === app.id}
-                        >
-                          {processingId === app.id ? (
+                          {processingId === member.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            <>
-                              <Check className="w-4 h-4 mr-1" /> Accept
-                            </>
+                            <UserMinus className="w-4 h-4" />
                           )}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleReject(app.id)}
-                          disabled={processingId === app.id}
-                        >
-                          <X className="w-4 h-4 mr-1" /> Reject
-                        </Button>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
-              </div>
+              </ScrollArea>
             )}
-
-            {processedApps.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">Processed</p>
-                <div className="space-y-2">
-                  {processedApps.map((app) => (
-                    <div key={app.id} className="p-3 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage src={app.applicant?.profile_image_url || ""} />
-                          <AvatarFallback className="text-xs">
-                            {getInitials(app.applicant?.full_name || "U")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{app.applicant?.full_name}</p>
-                        </div>
-                        <Badge
-                          variant={app.status === "accepted" ? "default" : "secondary"}
-                          className="text-xs capitalize"
-                        >
-                          {app.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </ScrollArea>
-        )}
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

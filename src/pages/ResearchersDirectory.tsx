@@ -9,7 +9,8 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Search, UserPlus, Check, Clock, Users, Building2, FlaskConical, Handshake, Globe, Megaphone, Plus } from "lucide-react";
+import { Search, UserPlus, Check, Clock, Users, Building2, FlaskConical, Handshake, Globe, Megaphone, Plus, X, Loader2 } from "lucide-react";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 import CollaborationRequestDialog from "@/components/CollaborationRequestDialog";
 import CreateCollaborationPostDialog from "@/components/CreateCollaborationPostDialog";
 import CollaborationPostCard, { type CollaborationPost } from "@/components/CollaborationPostCard";
@@ -36,6 +37,7 @@ interface CollaborationStatus {
 const ResearchersDirectory = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useAdminStatus();
   const [researchers, setResearchers] = useState<Researcher[]>([]);
   const [filteredResearchers, setFilteredResearchers] = useState<Researcher[]>([]);
   const [connectionStatuses, setConnectionStatuses] = useState<ConnectionStatus>({});
@@ -46,6 +48,7 @@ const ResearchersDirectory = () => {
   const [userType, setUserType] = useState<string | null>(null);
   const [selectedResearcher, setSelectedResearcher] = useState<Researcher | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   
   // Collaboration posts state
   const [collaborationPosts, setCollaborationPosts] = useState<CollaborationPost[]>([]);
@@ -378,6 +381,35 @@ const ResearchersDirectory = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  const handleAdminDelete = async (researcherId: string) => {
+    if (!isAdmin) return;
+    
+    setDeletingId(researcherId);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ 
+        is_deleted: true,
+        deleted_at: new Date().toISOString()
+      })
+      .eq("id", researcherId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "User Deleted",
+        description: "The user account has been deactivated"
+      });
+      setResearchers(prev => prev.filter(r => r.id !== researcherId));
+      setFilteredResearchers(prev => prev.filter(r => r.id !== researcherId));
+    }
+    setDeletingId(null);
+  };
+
   const handlePostCreated = () => {
     if (currentUserId) {
       fetchCollaborationPosts(currentUserId);
@@ -478,7 +510,22 @@ const ResearchersDirectory = () => {
           {/* Researchers Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredResearchers.map((researcher) => (
-              <Card key={researcher.id} className="hover:border-accent/50 transition-all hover:shadow-lg">
+              <Card key={researcher.id} className="hover:border-accent/50 transition-all hover:shadow-lg relative">
+                {/* Admin delete button */}
+                {isAdmin && (
+                  <button
+                    onClick={() => handleAdminDelete(researcher.id)}
+                    disabled={deletingId === researcher.id}
+                    className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                    title="Delete user (Admin)"
+                  >
+                    {deletingId === researcher.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <X className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4 mb-4">
                     <Avatar className="w-14 h-14">
