@@ -64,6 +64,7 @@ const ExpertsDirectory = () => {
         .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, verification_status, is_test_account')
         .eq('user_type', 'expert')
         .eq('verification_status', 'verified')
+        .eq('is_test_account', false)
         .neq('id', currentUserId);
 
       if (error) {
