@@ -103,7 +103,7 @@ const Navigation = () => {
                 Research Collab
               </Link>
               <Link to="/connections" className={`${linkClass} relative`}>
-                Connections
+                Chats
                 {hasUnread && (
                   <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
                 )}
@@ -124,7 +124,7 @@ const Navigation = () => {
                 Interviews
               </Link>
               <Link to="/connections" className={`${linkClass} relative`}>
-                Connections
+                Chats
                 {hasUnread && (
                   <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
                 )}
@@ -176,7 +176,7 @@ const Navigation = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/connections")} className="relative">
                       <MessageSquare className="w-4 h-4 mr-2" />
-                      Connections
+                      Chats
                       {hasUnread && (
                         <span className="absolute right-2 w-2 h-2 bg-destructive rounded-full" />
                       )}
@@ -192,7 +192,7 @@ const Navigation = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/connections")} className="relative">
                       <MessageSquare className="w-4 h-4 mr-2" />
-                      Connections
+                      Chats
                       {hasUnread && (
                         <span className="absolute right-2 w-2 h-2 bg-destructive rounded-full" />
                       )}

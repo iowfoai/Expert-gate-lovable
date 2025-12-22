@@ -352,9 +352,13 @@ const ResearchersDirectory = () => {
       [researcherId]: 'accepted'
     }));
 
+    // Get the researcher name from the list
+    const researcher = researchers.find(r => r.id === researcherId);
+    const researcherName = researcher?.full_name || "Researcher";
+    
     toast({
-      title: "Connected!",
-      description: "You are now connected with this researcher"
+      title: "Request Accepted",
+      description: `Request accepted, you may now chat with ${researcherName} (Researcher)`
     });
   };
 

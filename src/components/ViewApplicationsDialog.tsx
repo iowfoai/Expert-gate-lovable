@@ -176,9 +176,12 @@ const ViewApplicationsDialog = ({
       console.error("Error adding member:", memberError);
     }
 
+    const applicantName = application.applicant?.full_name || "Applicant";
+    const applicantType = application.applicant?.user_type === 'expert' ? 'Expert' : 'Researcher';
+    
     toast({
       title: "Application Accepted",
-      description: `${application.applicant?.full_name} has been added to the project group`,
+      description: `Request accepted, you may now chat with ${applicantName} (${applicantType})`,
     });
 
     setProcessingId(null);

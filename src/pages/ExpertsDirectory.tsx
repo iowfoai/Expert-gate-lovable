@@ -175,9 +175,13 @@ const ExpertsDirectory = () => {
       [expertId]: 'accepted'
     }));
 
+    // Get the expert name from the list
+    const expert = experts.find(e => e.id === expertId);
+    const expertName = expert?.full_name || "Expert";
+    
     toast({
-      title: "Connected!",
-      description: "You are now connected with this expert"
+      title: "Request Accepted",
+      description: `Request accepted, you may now chat with ${expertName} (Expert)`
     });
   };
 

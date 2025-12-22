@@ -289,6 +289,11 @@ const Connections = () => {
   }, [messages]);
 
   const handleAcceptRequest = async (connectionId: string) => {
+    // Get the connection to find the other user's info
+    const connection = pendingRequests.find(c => c.id === connectionId);
+    const otherUserName = connection?.other_user?.full_name || "User";
+    const otherUserType = connection?.other_user?.user_type === 'expert' ? 'Expert' : 'Researcher';
+    
     const { error } = await supabase
       .from('expert_connections')
       .update({ status: 'accepted' })
@@ -297,7 +302,7 @@ const Connections = () => {
     if (error) {
       toast({ title: "Error", description: "Failed to accept connection request", variant: "destructive" });
     } else {
-      toast({ title: "Success", description: "Connection request accepted!" });
+      toast({ title: "Request Accepted", description: `Request accepted, you may now chat with ${otherUserName} (${otherUserType})` });
     }
   };
 
@@ -340,7 +345,8 @@ const Connections = () => {
       console.error('Error creating connection:', connError);
     }
 
-    toast({ title: "Success", description: "Collaboration request accepted!" });
+    const expertName = collabRequest.expert?.full_name || "Expert";
+    toast({ title: "Request Accepted", description: `Request accepted, you may now chat with ${expertName} (Expert)` });
   };
 
   const handleDeclineCollaboration = async (collabId: string) => {
@@ -691,8 +697,8 @@ const Connections = () => {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Users className="w-8 h-8 text-accent" />
-            Connections
+            <MessageSquare className="w-8 h-8 text-accent" />
+            Chats
           </h1>
           <p className="text-muted-foreground">Chat with your network</p>
         </div>
