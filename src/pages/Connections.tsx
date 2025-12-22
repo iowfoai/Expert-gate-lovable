@@ -9,7 +9,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, MessageSquare, Send, ArrowLeft, Check, X, GraduationCap, FlaskConical, Handshake, Circle, Calendar, UserCheck } from "lucide-react";
+import {
+  Users,
+  MessageSquare,
+  Send,
+  ArrowLeft,
+  Check,
+  X,
+  GraduationCap,
+  FlaskConical,
+  Handshake,
+  Circle,
+  Calendar,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
@@ -57,6 +69,29 @@ interface Message {
   read_at: string | null;
 }
 
+interface ProjectGroup {
+  id: string;
+  name: string;
+  post_id: string;
+  created_at: string;
+}
+
+interface SenderProfile {
+  id: string;
+  full_name: string;
+  institution: string | null;
+  profile_image_url: string | null;
+  user_type: string;
+}
+
+interface GroupMessage {
+  id: string;
+  content: string;
+  sender_id: string;
+  created_at: string;
+  sender?: SenderProfile;
+}
+
 const Connections = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -67,6 +102,11 @@ const Connections = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [pendingRequests, setPendingRequests] = useState<Connection[]>([]);
   const [collaborationRequests, setCollaborationRequests] = useState<CollaborationRequest[]>([]);
+
+  const [projectGroups, setProjectGroups] = useState<ProjectGroup[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<ProjectGroup | null>(null);
+  const [groupMessages, setGroupMessages] = useState<GroupMessage[]>([]);
+
   const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -182,16 +222,29 @@ const Connections = () => {
             .in('id', expertIds);
 
           const expertMap = new Map(expertProfiles?.map(p => [p.id, p]) || []);
-          
+
           const enrichedCollabs = collabData.map(c => ({
             ...c,
             expert: expertMap.get(c.expert_id)
           }));
-          
+
           setCollaborationRequests(enrichedCollabs);
         } else {
           setCollaborationRequests([]);
         }
+      }
+
+      // Fetch project groups (group chats) the current user can access
+      const { data: groupsData, error: groupsError } = await supabase
+        .from('project_groups')
+        .select('id, name, post_id, created_at')
+        .order('created_at', { ascending: false });
+
+      if (groupsError) {
+        console.error('Error fetching project groups:', groupsError);
+        setProjectGroups([]);
+      } else {
+        setProjectGroups(groupsData || []);
       }
 
       setLoading(false);
@@ -201,6 +254,7 @@ const Connections = () => {
       if (chatId) {
         const targetConnection = enrichedConnections.find(c => c.id === chatId);
         if (targetConnection) {
+          setSelectedGroup(null);
           setSelectedConnection(targetConnection);
         }
       }
@@ -255,12 +309,12 @@ const Connections = () => {
     };
 
     fetchMessages();
-    
+
     // Always mark as read when opening chat
     markAsRead(selectedConnection.id);
-    
+
     // Update local connection state to remove unread indicator
-    setConnections(prev => prev.map(c => 
+    setConnections(prev => prev.map(c =>
       c.id === selectedConnection.id ? { ...c, has_unread: false } : c
     ));
 
@@ -282,11 +336,64 @@ const Connections = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedConnection?.id, userId]);
 
+  // Fetch messages for selected project group (group chat)
+  useEffect(() => {
+    if (!selectedGroup || !userId) return;
+
+    const fetchGroupMessages = async () => {
+      const { data, error } = await supabase
+        .from('project_messages')
+        .select('*')
+        .eq('group_id', selectedGroup.id)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching project messages:', error);
+        return;
+      }
+
+      const senderIds = Array.from(new Set((data || []).map((m) => m.sender_id)));
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, institution, profile_image_url, user_type')
+        .in('id', senderIds);
+
+      const profilesMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+      setGroupMessages((data || []).map((m) => ({ ...m, sender: profilesMap.get(m.sender_id) })));
+    };
+
+    fetchGroupMessages();
+
+    const channel = supabase
+      .channel(`project-messages-${selectedGroup.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'project_messages',
+        filter: `group_id=eq.${selectedGroup.id}`,
+      }, async (payload) => {
+        const newMsg = payload.new as unknown as GroupMessage;
+
+        const { data: senderProfile } = await supabase
+          .from('profiles')
+          .select('id, full_name, institution, profile_image_url, user_type')
+          .eq('id', newMsg.sender_id)
+          .maybeSingle();
+
+        setGroupMessages((prev) => [...prev, { ...newMsg, sender: senderProfile || undefined }]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedGroup?.id, userId]);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-  }, [messages]);
+  }, [messages, groupMessages]);
 
   const handleAcceptRequest = async (connectionId: string) => {
     // Get the connection to find the other user's info
@@ -393,6 +500,26 @@ const Connections = () => {
     }
   };
 
+  const handleSendGroupMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !selectedGroup || !userId) return;
+
+    const { error } = await supabase
+      .from('project_messages')
+      .insert({
+        group_id: selectedGroup.id,
+        sender_id: userId,
+        content: newMessage.trim(),
+      });
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to send message", variant: "destructive" });
+      return;
+    }
+
+    setNewMessage("");
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedConnection || !userId) return;
@@ -414,7 +541,7 @@ const Connections = () => {
     // Mark as unread for the other user
     const isRequester = selectedConnection.requester_id === userId;
     const updateField = isRequester ? 'has_unread_for_recipient' : 'has_unread_for_requester';
-    
+
     await supabase
       .from('expert_connections')
       .update({ [updateField]: true })
@@ -511,6 +638,47 @@ const Connections = () => {
 
     return (
       <ScrollArea className="h-[calc(100vh-450px)] min-h-[300px]">
+        {/* Project group chats */}
+        {activeTab === 'collaborations' && projectGroups.length > 0 && (
+          <div className="px-4 pb-2">
+            <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Project Group Chats
+            </p>
+            {projectGroups.map((group) => (
+              <button
+                key={group.id}
+                onClick={() => {
+                  setSelectedConnection(null);
+                  setMessages([]);
+                  setSelectedGroup(group);
+                  setGroupMessages([]);
+                  setNewMessage('');
+                }}
+                className={`w-full p-3 rounded-lg text-left transition-colors mb-2 ${
+                  selectedGroup?.id === group.id
+                    ? 'bg-accent text-accent-foreground'
+                    : 'hover:bg-muted'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-10 h-10">
+                    <AvatarFallback>{getInitials(group.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{group.name}</p>
+                    <p className="text-xs opacity-80 truncate">Group chat</p>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
+                    <Handshake className="w-2.5 h-2.5 mr-0.5" />
+                    Collab
+                  </Badge>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Collaboration requests for researchers */}
         {userType === 'researcher' && activeTab === 'collaborations' && collaborationRequests.length > 0 && (
           <div className="px-4 pb-2">
@@ -606,10 +774,14 @@ const Connections = () => {
               onMouseLeave={() => setHoveredConnectionId(null)}
             >
               <button
-                onClick={() => setSelectedConnection(connection)}
+                onClick={() => {
+                  setSelectedGroup(null);
+                  setGroupMessages([]);
+                  setSelectedConnection(connection);
+                }}
                 className={`w-full p-3 rounded-lg text-left transition-colors ${
-                  selectedConnection?.id === connection.id 
-                    ? 'bg-accent text-accent-foreground' 
+                  selectedConnection?.id === connection.id
+                    ? 'bg-accent text-accent-foreground'
                     : 'hover:bg-muted'
                 }`}
               >
@@ -646,7 +818,7 @@ const Connections = () => {
                   )}
                 </div>
               </button>
-              
+
               {/* Delete button for friend connections */}
               {isFriendConnection(connection) && hoveredConnectionId === connection.id && (
                 <button
@@ -663,7 +835,7 @@ const Connections = () => {
             </div>
           ))}
 
-          {conns.length === 0 && pending.length === 0 && collaborationRequests.length === 0 && (
+          {conns.length === 0 && pending.length === 0 && collaborationRequests.length === 0 && (activeTab !== 'collaborations' || projectGroups.length === 0) && (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p>No connections yet</p>
@@ -706,7 +878,7 @@ const Connections = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Connections List with Tabs */}
           <Card className="lg:col-span-1 overflow-hidden">
-            <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setSelectedConnection(null); }} className="h-full">
+            <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setSelectedConnection(null); setSelectedGroup(null); setMessages([]); setGroupMessages([]); }} className="h-full">
               <CardHeader className="pb-2">
                 <TabsList className="w-full grid grid-cols-3">
                   <TabsTrigger value={userType === 'researcher' ? 'researchers' : 'experts'} className="gap-1 text-xs px-2">
@@ -747,7 +919,15 @@ const Connections = () => {
                 <CardHeader className="pb-3 border-b flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSelectedConnection(null)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="lg:hidden"
+                        onClick={() => {
+                          setSelectedConnection(null);
+                          setMessages([]);
+                        }}
+                      >
                         <ArrowLeft className="w-5 h-5" />
                       </Button>
                       <Avatar className="w-10 h-10">
@@ -769,23 +949,23 @@ const Connections = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* End Interview/Collaboration button - only for cross-type connections */}
-                    {!isFriendConnection(selectedConnection) && 
-                     selectedConnection.other_user.user_type !== userType && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleMarkAsDone(selectedConnection.id)}
-                        className="gap-2 text-destructive border-destructive/50 hover:bg-destructive/10"
-                      >
-                        <X className="w-4 h-4" />
-                        {selectedConnection.connection_type === 'interview' ? 'End Interview' : 'End Collaboration'}
-                      </Button>
-                    )}
+                    {!isFriendConnection(selectedConnection) &&
+                      selectedConnection.other_user.user_type !== userType && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleMarkAsDone(selectedConnection.id)}
+                          className="gap-2 text-destructive border-destructive/50 hover:bg-destructive/10"
+                        >
+                          <X className="w-4 h-4" />
+                          {selectedConnection.connection_type === 'interview' ? 'End Interview' : 'End Collaboration'}
+                        </Button>
+                      )}
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
                   <ScrollArea className="flex-1 p-4">
                     <div className="space-y-4">
@@ -818,13 +998,98 @@ const Connections = () => {
                       <div ref={messagesEndRef} />
                     </div>
                   </ScrollArea>
-                  
+
                   <form onSubmit={handleSendMessage} className="p-4 border-t flex-shrink-0">
                     <div className="flex gap-2">
                       <Input
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a message..."
+                        className="flex-1"
+                      />
+                      <Button type="submit" disabled={!newMessage.trim()}>
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </>
+            ) : selectedGroup ? (
+              <>
+                <CardHeader className="pb-3 border-b flex-shrink-0">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="lg:hidden"
+                      onClick={() => {
+                        setSelectedGroup(null);
+                        setGroupMessages([]);
+                      }}
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                    </Button>
+
+                    <Avatar className="w-10 h-10">
+                      <AvatarFallback>{getInitials(selectedGroup.name)}</AvatarFallback>
+                    </Avatar>
+
+                    <div>
+                      <CardTitle className="text-lg">{selectedGroup.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          Project group chat
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
+                  <ScrollArea className="flex-1 p-4">
+                    <div className="space-y-4">
+                      {groupMessages.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                          <p>No messages yet</p>
+                          <p className="text-sm">Send the first message to start the group chat.</p>
+                        </div>
+                      )}
+
+                      {groupMessages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`flex ${message.sender_id === userId ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div
+                            className={`max-w-[75%] p-3 rounded-lg ${
+                              message.sender_id === userId
+                                ? 'bg-accent text-accent-foreground'
+                                : 'bg-muted'
+                            }`}
+                          >
+                            {message.sender_id !== userId && (
+                              <p className="text-xs opacity-70 mb-1">
+                                {message.sender?.full_name || 'Member'}
+                              </p>
+                            )}
+                            <p className="text-sm">{message.content}</p>
+                            <p className="text-xs opacity-60 mt-1">
+                              {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  </ScrollArea>
+
+                  <form onSubmit={handleSendGroupMessage} className="p-4 border-t flex-shrink-0">
+                    <div className="flex gap-2">
+                      <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Message the group..."
                         className="flex-1"
                       />
                       <Button type="submit" disabled={!newMessage.trim()}>
