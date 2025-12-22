@@ -20,6 +20,7 @@ const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profileName, setProfileName] = useState<string>("");
   const [userType, setUserType] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { isAdmin } = useAdminStatus();
   const { hasUnread } = useUnreadMessages();
   const navigate = useNavigate();
@@ -31,6 +32,8 @@ const Navigation = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
+      } else {
+        setIsLoading(false);
       }
     });
 
@@ -42,6 +45,7 @@ const Navigation = () => {
       } else {
         setProfileName("");
         setUserType(null);
+        setIsLoading(false);
       }
     });
 
@@ -59,6 +63,7 @@ const Navigation = () => {
       setProfileName(data.full_name);
       setUserType(data.user_type);
     }
+    setIsLoading(false);
   };
 
   const handleSignOut = async () => {
@@ -82,6 +87,9 @@ const Navigation = () => {
 
   const linkClass = "text-sm font-medium hover:text-accent transition-all duration-300 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-0.5 after:bg-accent after:scale-x-0 after:origin-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-left";
 
+  // Don't render navigation links until we know the user type
+  const showNavLinks = !isLoading;
+
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border transition-all duration-300">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -91,62 +99,68 @@ const Navigation = () => {
         </Link>
         
         <div className="hidden md:flex items-center gap-6">
-          {isExpert ? (
+          {showNavLinks && (
             <>
-              <Link to="/expert-home" className={linkClass}>
-                Home
+              {isExpert ? (
+                <>
+                  <Link to="/expert-home" className={linkClass}>
+                    Home
+                  </Link>
+                  <Link to="/experts-directory" className={linkClass}>
+                    Find Peers
+                  </Link>
+                  <Link to="/research-collab" className={linkClass}>
+                    Research Collab
+                  </Link>
+                  <Link to="/connections" className={`${linkClass} relative`}>
+                    Chats
+                    {hasUnread && (
+                      <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
+                    )}
+                  </Link>
+                </>
+              ) : user ? (
+                <>
+                  <Link to="/find-experts" className={linkClass}>
+                    Interview Experts
+                  </Link>
+                  <Link to="/research-collab" className={linkClass}>
+                    Research Collab
+                  </Link>
+                  <Link to="/interviews" className={linkClass}>
+                    Interviews
+                  </Link>
+                  <Link to="/connections" className={`${linkClass} relative`}>
+                    Chats
+                    {hasUnread && (
+                      <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
+                    )}
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/find-experts" className={linkClass}>
+                    Interview Experts
+                  </Link>
+                  <Link to="/how-it-works" className={linkClass}>
+                    How It Works
+                  </Link>
+                </>
+              )}
+              <Link to="/about" className={linkClass}>
+                About
               </Link>
-              <Link to="/experts-directory" className={linkClass}>
-                Find Peers
-              </Link>
-              <Link to="/research-collab" className={linkClass}>
-                Research Collab
-              </Link>
-              <Link to="/connections" className={`${linkClass} relative`}>
-                Chats
-                {hasUnread && (
-                  <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
-                )}
-              </Link>
-            </>
-          ) : user ? (
-            <>
-              <Link to="/find-experts" className={linkClass}>
-                Interview Experts
-              </Link>
-              <Link to="/research-collab" className={linkClass}>
-                Research Collab
-              </Link>
-              <Link to="/interviews" className={linkClass}>
-                Interviews
-              </Link>
-              <Link to="/connections" className={`${linkClass} relative`}>
-                Chats
-                {hasUnread && (
-                  <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
-                )}
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link to="/find-experts" className={linkClass}>
-                Interview Experts
-              </Link>
-              <Link to="/how-it-works" className={linkClass}>
-                How It Works
+              <Link to="/support" className={linkClass}>
+                Support
               </Link>
             </>
           )}
-          <Link to="/about" className={linkClass}>
-            About
-          </Link>
-          <Link to="/support" className={linkClass}>
-            Support
-          </Link>
         </div>
         
         <div className="flex items-center gap-3">
-          {user ? (
+          {isLoading ? (
+            <div className="h-9 w-24 animate-pulse bg-muted rounded" />
+          ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
