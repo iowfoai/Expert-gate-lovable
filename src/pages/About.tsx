@@ -1,7 +1,7 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
-import { Target, Heart, Users, Shield, MessageSquare, Link2, Calendar } from "lucide-react";
+import { Target, Heart, Users, Shield, MessageSquare, Handshake, Calendar, ArrowLeftRight } from "lucide-react";
 
 const About = () => {
   return (
@@ -10,6 +10,10 @@ const About = () => {
       
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent mb-6">
+            <ArrowLeftRight className="w-4 h-4" />
+            <span className="text-sm font-medium">A Two-Way Street</span>
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">About ExpertGate</h1>
           <p className="text-xl text-muted-foreground mb-12">
             Bridging Researchers and Experts — Ethically and Effortlessly
@@ -17,17 +21,19 @@ const About = () => {
           
           <div className="prose prose-lg max-w-none mb-12">
             <p className="text-muted-foreground leading-relaxed">
-              ExpertGate was founded on a simple observation: researchers often struggle to find and connect 
-              with the right experts for their work. Whether you're a student working on a thesis, a journalist 
-              investigating a story, or a professional researcher conducting a study, finding verified experts 
-              who are willing and available for interviews can be a major challenge.
+              ExpertGate was founded on a simple observation: meaningful knowledge exchange happens when 
+              researchers and experts can easily find and connect with each other. Whether you're a student 
+              working on a thesis, a journalist investigating a story, a professional researcher conducting 
+              a study, or an expert looking to collaborate with peers — finding the right people can be 
+              a major challenge.
             </p>
             
             <p className="text-muted-foreground leading-relaxed mt-4">
-              We built ExpertGate to solve this problem. Our platform makes it easy to discover, connect with, 
-              and interview experts across dozens of fields — all while maintaining the highest standards of 
-              academic integrity and ethical research practices. ExpertGate is completely free to use for both 
-              researchers and experts.
+              We built ExpertGate to solve this problem. Our platform creates a two-way street where 
+              researchers can book interviews with verified experts, experts can connect with peers in 
+              their field, and everyone can collaborate on research projects together. All while maintaining 
+              the highest standards of academic integrity and ethical research practices. ExpertGate is 
+              completely free to use for both researchers and experts.
             </p>
           </div>
           
@@ -37,8 +43,8 @@ const About = () => {
                 <Target className="w-10 h-10 text-accent mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Our Mission</h3>
                 <p className="text-muted-foreground">
-                  To democratize access to expert knowledge and make professional research interviews 
-                  accessible, ethical, and efficient for everyone.
+                  To bridge the gap between researchers and experts, enabling meaningful knowledge 
+                  exchange, collaboration, and professional connections.
                 </p>
               </CardContent>
             </Card>
@@ -48,8 +54,8 @@ const About = () => {
                 <Heart className="w-10 h-10 text-accent mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Our Values</h3>
                 <p className="text-muted-foreground">
-                  Integrity, transparency, and respect for both researchers and experts guide everything 
-                  we do on ExpertGate.
+                  Integrity, transparency, and mutual respect between researchers and experts guide 
+                  everything we do on ExpertGate.
                 </p>
               </CardContent>
             </Card>
@@ -59,8 +65,8 @@ const About = () => {
                 <Users className="w-10 h-10 text-accent mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Our Community</h3>
                 <p className="text-muted-foreground">
-                  A growing network of verified experts and researchers trust ExpertGate for their 
-                  professional interview and collaboration needs.
+                  A growing network of verified experts and researchers trust ExpertGate for interviews, 
+                  collaborations, and professional connections.
                 </p>
               </CardContent>
             </Card>
@@ -79,19 +85,26 @@ const About = () => {
 
           <div className="bg-muted/30 rounded-lg p-8 mb-12">
             <h2 className="text-2xl font-bold mb-6">Platform Features</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="flex flex-col items-center text-center">
-                <Link2 className="w-8 h-8 text-accent mb-3" />
-                <h3 className="font-semibold mb-2">Expert Connections</h3>
+                <Calendar className="w-8 h-8 text-accent mb-3" />
+                <h3 className="font-semibold mb-2">Expert Interviews</h3>
                 <p className="text-sm text-muted-foreground">
-                  Connect experts with researchers or other experts for collaboration and knowledge sharing.
+                  Researchers can book interviews with verified experts for their research projects.
                 </p>
               </div>
               <div className="flex flex-col items-center text-center">
-                <Calendar className="w-8 h-8 text-accent mb-3" />
-                <h3 className="font-semibold mb-2">Interview Scheduling</h3>
+                <Handshake className="w-8 h-8 text-accent mb-3" />
+                <h3 className="font-semibold mb-2">Research Collaboration</h3>
                 <p className="text-sm text-muted-foreground">
-                  Easily schedule and manage interviews with built-in calendar integration.
+                  Post collaboration opportunities and find partners for research projects.
+                </p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <Users className="w-8 h-8 text-accent mb-3" />
+                <h3 className="font-semibold mb-2">Expert Connections</h3>
+                <p className="text-sm text-muted-foreground">
+                  Experts can connect with peers in their field to build professional networks.
                 </p>
               </div>
               <div className="flex flex-col items-center text-center">
@@ -117,7 +130,15 @@ const About = () => {
               </li>
               <li className="flex gap-2">
                 <span className="text-accent">✓</span>
-                <span>Connect experts with researchers or other experts for collaboration</span>
+                <span>Book interviews with experts for your research projects</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-accent">✓</span>
+                <span>Post and join research collaboration projects</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-accent">✓</span>
+                <span>Experts can connect with peers in their field</span>
               </li>
               <li className="flex gap-2">
                 <span className="text-accent">✓</span>
