@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Network, Mail, Linkedin, Twitter } from "lucide-react";
+import { Network, Mail, Linkedin, Twitter, MessageSquareWarning } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -86,8 +86,15 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} ExpertGate. All rights reserved.</p>
+        <div className="mt-8 pt-8 border-t border-border text-center space-y-3">
+          <p className="text-xs italic text-muted-foreground/70 max-w-2xl mx-auto">
+            This product is still in beta. Please{" "}
+            <Link to="/contact" className="underline hover:text-accent">submit any feedback</Link>{" "}
+            if you have suggestions or encounter any problems. You may also{" "}
+            <Link to="/support" className="underline hover:text-accent">create a support ticket</Link>{" "}
+            if you have issues with your account.
+          </p>
+          <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} ExpertGate. All rights reserved.</p>
         </div>
       </div>
     </footer>
