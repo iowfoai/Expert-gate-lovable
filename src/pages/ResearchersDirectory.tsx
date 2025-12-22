@@ -9,8 +9,10 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Search, UserPlus, Check, Clock, Users, Building2, FlaskConical, Handshake, Globe } from "lucide-react";
+import { Search, UserPlus, Check, Clock, Users, Building2, FlaskConical, Handshake, Globe, Megaphone, Plus } from "lucide-react";
 import CollaborationRequestDialog from "@/components/CollaborationRequestDialog";
+import CreateCollaborationPostDialog from "@/components/CreateCollaborationPostDialog";
+import CollaborationPostCard, { type CollaborationPost } from "@/components/CollaborationPostCard";
 
 interface Researcher {
   id: string;
@@ -44,6 +46,69 @@ const ResearchersDirectory = () => {
   const [userType, setUserType] = useState<string | null>(null);
   const [selectedResearcher, setSelectedResearcher] = useState<Researcher | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  
+  // Collaboration posts state
+  const [collaborationPosts, setCollaborationPosts] = useState<CollaborationPost[]>([]);
+  const [createPostDialogOpen, setCreatePostDialogOpen] = useState(false);
+
+  const fetchCollaborationPosts = async (userId: string) => {
+    const { data: posts, error } = await supabase
+      .from('collaboration_posts')
+      .select('*')
+      .eq('status', 'open')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching posts:', error);
+      return;
+    }
+
+    if (posts && posts.length > 0) {
+      // Fetch author profiles
+      const authorIds = [...new Set(posts.map(p => p.author_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, profile_image_url, user_type, institution, research_institution')
+        .in('id', authorIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      // Fetch user's applications
+      const { data: userApps } = await supabase
+        .from('collaboration_applications')
+        .select('post_id, status')
+        .eq('applicant_id', userId);
+
+      const appMap = new Map(userApps?.map(a => [a.post_id, a.status]) || []);
+
+      // Fetch application counts for user's own posts
+      const userPostIds = posts.filter(p => p.author_id === userId).map(p => p.id);
+      let appCounts: Record<string, number> = {};
+      
+      if (userPostIds.length > 0) {
+        const { data: counts } = await supabase
+          .from('collaboration_applications')
+          .select('post_id')
+          .in('post_id', userPostIds)
+          .eq('status', 'pending');
+        
+        counts?.forEach(c => {
+          appCounts[c.post_id] = (appCounts[c.post_id] || 0) + 1;
+        });
+      }
+
+      const enriched: CollaborationPost[] = posts.map(post => ({
+        ...post,
+        author: profileMap.get(post.author_id),
+        application_status: post.author_id === userId ? undefined : (appMap.get(post.id) as any || 'none'),
+        application_count: appCounts[post.id] || 0,
+      }));
+
+      setCollaborationPosts(enriched);
+    } else {
+      setCollaborationPosts([]);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +121,6 @@ const ResearchersDirectory = () => {
       const userId = session.user.id;
       setCurrentUserId(userId);
 
-      // Ensure the current user has a profile row (required for connection foreign keys)
       const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
         .select('user_type')
@@ -105,6 +169,9 @@ const ResearchersDirectory = () => {
 
       const effectiveUserType = profile?.user_type ?? safeUserType;
       setUserType(effectiveUserType);
+
+      // Fetch collaboration posts
+      await fetchCollaborationPosts(userId);
 
       // Fetch all researchers except current user
       const { data: researchersData, error } = await supabase
@@ -189,7 +256,6 @@ const ResearchersDirectory = () => {
 
           if (!record) return;
 
-          // Only handle friend connections relevant to current user
           if (record.connection_type !== 'friend') return;
           if (record.requester_id !== currentUserId && record.recipient_id !== currentUserId) return;
 
@@ -308,6 +374,12 @@ const ResearchersDirectory = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  const handlePostCreated = () => {
+    if (currentUserId) {
+      fetchCollaborationPosts(currentUserId);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -330,145 +402,189 @@ const ResearchersDirectory = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/10 mb-4">
             <FlaskConical className="w-8 h-8 text-accent" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Researcher Directory</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Research Collab</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            {userType === 'expert' 
-              ? 'Find researchers to collaborate with on exciting projects'
-              : 'Connect with fellow researchers and expand your network'}
+            Find collaborators for your research projects or join exciting ongoing research
           </p>
         </div>
 
-        {/* Search */}
-        <div className="max-w-xl mx-auto mb-10">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, institution, research field, or country..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+        {/* Collaboration Posts Section */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <Megaphone className="w-5 h-5 text-accent" />
+              <h2 className="text-xl font-semibold">Calls for Collaboration</h2>
+            </div>
+            <Button onClick={() => setCreatePostDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Post Collaboration
+            </Button>
           </div>
+
+          {collaborationPosts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {collaborationPosts.map((post) => (
+                <CollaborationPostCard
+                  key={post.id}
+                  post={post}
+                  currentUserId={currentUserId}
+                  onRefresh={handlePostCreated}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card className="bg-muted/30">
+              <CardContent className="py-8 text-center">
+                <Megaphone className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+                <p className="text-muted-foreground">No collaboration posts yet. Be the first to post!</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        {/* Results Count */}
-        <p className="text-muted-foreground mb-6">
-          {filteredResearchers.length} researcher{filteredResearchers.length !== 1 ? 's' : ''} found
-        </p>
+        {/* Researchers Section */}
+        <div className="border-t pt-12">
+          <div className="text-center mb-8">
+            <h2 className="text-xl font-semibold mb-2">Browse Researchers</h2>
+            <p className="text-muted-foreground">
+              {userType === 'expert' 
+                ? 'Find researchers to collaborate with on exciting projects'
+                : 'Connect with fellow researchers and expand your network'}
+            </p>
+          </div>
 
-        {/* Researchers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredResearchers.map((researcher) => (
-            <Card key={researcher.id} className="hover:border-accent/50 transition-all hover:shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4 mb-4">
-                  <Avatar className="w-14 h-14">
-                    <AvatarImage src={researcher.profile_image_url || undefined} />
-                    <AvatarFallback className="bg-accent/10 text-accent font-medium">
-                      {getInitials(researcher.full_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate">{researcher.full_name}</h3>
-                    {researcher.research_institution && (
-                      <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
-                        <Building2 className="w-3 h-3 flex-shrink-0" />
-                        {researcher.research_institution}
+          {/* Search */}
+          <div className="max-w-xl mx-auto mb-10">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, institution, research field, or country..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          {/* Results Count */}
+          <p className="text-muted-foreground mb-6">
+            {filteredResearchers.length} researcher{filteredResearchers.length !== 1 ? 's' : ''} found
+          </p>
+
+          {/* Researchers Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredResearchers.map((researcher) => (
+              <Card key={researcher.id} className="hover:border-accent/50 transition-all hover:shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4 mb-4">
+                    <Avatar className="w-14 h-14">
+                      <AvatarImage src={researcher.profile_image_url || undefined} />
+                      <AvatarFallback className="bg-accent/10 text-accent font-medium">
+                        {getInitials(researcher.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg truncate">{researcher.full_name}</h3>
+                      {researcher.research_institution && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
+                          <Building2 className="w-3 h-3 flex-shrink-0" />
+                          {researcher.research_institution}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="space-y-3 mb-4">
+                    {researcher.research_field && researcher.research_field.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {researcher.research_field.slice(0, 3).map((field, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {field}
+                          </Badge>
+                        ))}
+                        {researcher.research_field.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{researcher.research_field.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                      )}
+
+                    {researcher.preferred_languages && researcher.preferred_languages.length > 0 && (
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Globe className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>{researcher.preferred_languages.join(', ')}</span>
+                      </div>
+                    )}
+
+                    {researcher.bio && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {researcher.bio}
                       </p>
                     )}
                   </div>
-                </div>
 
-                {/* Details */}
-                <div className="space-y-3 mb-4">
-                  {researcher.research_field && researcher.research_field.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {researcher.research_field.slice(0, 3).map((field, idx) => (
-                        <Badge key={idx} variant="secondary" className="text-xs">
-                          {field}
-                        </Badge>
-                      ))}
-                      {researcher.research_field.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{researcher.research_field.length - 3}
-                        </Badge>
-                      )}
-                    </div>
+                  {/* Connection/Collaboration Button */}
+                  <div className="pt-3 border-t border-border">
+                    {userType === 'expert' ? (
+                      // Expert view - show collaborate button
+                      collaborationStatuses[researcher.id] === 'accepted' ? (
+                        <Button variant="outline" className="w-full" disabled>
+                          <Check className="w-4 h-4 mr-2" />
+                          Collaborating
+                        </Button>
+                      ) : collaborationStatuses[researcher.id] === 'pending' ? (
+                        <Button variant="outline" className="w-full" disabled>
+                          <Clock className="w-4 h-4 mr-2" />
+                          Request Pending
+                        </Button>
+                      ) : (
+                        <Button variant="outline" className="w-full" onClick={() => handleCollaborateClick(researcher)}>
+                          <Handshake className="w-4 h-4 mr-2" />
+                          Collaborate
+                        </Button>
+                      )
+                    ) : (
+                      // Researcher view - show connect button
+                      connectionStatuses[researcher.id] === 'accepted' ? (
+                        <Button variant="outline" className="w-full" disabled>
+                          <Check className="w-4 h-4 mr-2" />
+                          Connected
+                        </Button>
+                      ) : connectionStatuses[researcher.id] === 'pending_sent' ? (
+                        <Button variant="outline" className="w-full" disabled>
+                          <Clock className="w-4 h-4 mr-2" />
+                          Request Pending
+                        </Button>
+                      ) : connectionStatuses[researcher.id] === 'pending_received' ? (
+                        <Button className="w-full" onClick={() => acceptConnection(researcher.id)}>
+                          <Check className="w-4 h-4 mr-2" />
+                          Accept Request
+                        </Button>
+                      ) : (
+                        <Button variant="outline" className="w-full" onClick={() => sendConnectionRequest(researcher.id)}>
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Connect
+                        </Button>
+                      )
                     )}
-
-                  {researcher.preferred_languages && researcher.preferred_languages.length > 0 && (
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Globe className="w-3.5 h-3.5 flex-shrink-0" />
-                      <span>{researcher.preferred_languages.join(', ')}</span>
-                    </div>
-                  )}
-
-                  {researcher.bio && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {researcher.bio}
-                    </p>
-                  )}
-                </div>
-
-                {/* Connection/Collaboration Button */}
-                <div className="pt-3 border-t border-border">
-                  {userType === 'expert' ? (
-                    // Expert view - show collaborate button
-                    collaborationStatuses[researcher.id] === 'accepted' ? (
-                      <Button variant="outline" className="w-full" disabled>
-                        <Check className="w-4 h-4 mr-2" />
-                        Collaborating
-                      </Button>
-                    ) : collaborationStatuses[researcher.id] === 'pending' ? (
-                      <Button variant="outline" className="w-full" disabled>
-                        <Clock className="w-4 h-4 mr-2" />
-                        Request Pending
-                      </Button>
-                    ) : (
-                      <Button variant="outline" className="w-full" onClick={() => handleCollaborateClick(researcher)}>
-                        <Handshake className="w-4 h-4 mr-2" />
-                        Collaborate
-                      </Button>
-                    )
-                  ) : (
-                    // Researcher view - show connect button
-                    connectionStatuses[researcher.id] === 'accepted' ? (
-                      <Button variant="outline" className="w-full" disabled>
-                        <Check className="w-4 h-4 mr-2" />
-                        Connected
-                      </Button>
-                    ) : connectionStatuses[researcher.id] === 'pending_sent' ? (
-                      <Button variant="outline" className="w-full" disabled>
-                        <Clock className="w-4 h-4 mr-2" />
-                        Request Pending
-                      </Button>
-                    ) : connectionStatuses[researcher.id] === 'pending_received' ? (
-                      <Button className="w-full" onClick={() => acceptConnection(researcher.id)}>
-                        <Check className="w-4 h-4 mr-2" />
-                        Accept Request
-                      </Button>
-                    ) : (
-                      <Button variant="outline" className="w-full" onClick={() => sendConnectionRequest(researcher.id)}>
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Connect
-                      </Button>
-                    )
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filteredResearchers.length === 0 && (
-          <div className="text-center py-16">
-            <Users className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
-            <h3 className="text-xl font-medium mb-2">No researchers found</h3>
-            <p className="text-muted-foreground">
-              Try adjusting your search criteria
-            </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        )}
+
+          {filteredResearchers.length === 0 && (
+            <div className="text-center py-16">
+              <Users className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-xl font-medium mb-2">No researchers found</h3>
+              <p className="text-muted-foreground">
+                Try adjusting your search criteria
+              </p>
+            </div>
+          )}
+        </div>
       </main>
 
       <Footer />
@@ -477,11 +593,20 @@ const ResearchersDirectory = () => {
         <CollaborationRequestDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
-          researcher={selectedResearcher}
+          researcher={{
+            id: selectedResearcher.id,
+            full_name: selectedResearcher.full_name,
+          }}
           researcherLanguages={selectedResearcher.preferred_languages || ['English']}
           onSuccess={() => handleCollaborationSent(selectedResearcher.id)}
         />
       )}
+
+      <CreateCollaborationPostDialog
+        open={createPostDialogOpen}
+        onOpenChange={setCreatePostDialogOpen}
+        onPostCreated={handlePostCreated}
+      />
     </div>
   );
 };

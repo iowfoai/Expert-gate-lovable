@@ -99,8 +99,8 @@ const Navigation = () => {
               <Link to="/experts-directory" className={linkClass}>
                 Find Experts
               </Link>
-              <Link to="/find-researchers" className={linkClass}>
-                Find Researchers
+              <Link to="/research-collab" className={linkClass}>
+                Research Collab
               </Link>
               <Link to="/connections" className={`${linkClass} relative`}>
                 Connections
@@ -117,8 +117,8 @@ const Navigation = () => {
               <Link to="/find-experts" className={linkClass}>
                 Find Experts
               </Link>
-              <Link to="/find-researchers" className={linkClass}>
-                Find Researchers
+              <Link to="/research-collab" className={linkClass}>
+                Research Collab
               </Link>
               <Link to="/interviews" className={linkClass}>
                 Interviews
@@ -170,9 +170,9 @@ const Navigation = () => {
                       <Users className="w-4 h-4 mr-2" />
                       Find Experts
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/find-researchers")}>
+                    <DropdownMenuItem onClick={() => navigate("/research-collab")}>
                       <FlaskConical className="w-4 h-4 mr-2" />
-                      Find Researchers
+                      Research Collab
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/connections")} className="relative">
                       <MessageSquare className="w-4 h-4 mr-2" />
@@ -186,9 +186,9 @@ const Navigation = () => {
                 )}
                 {!isExpert && user && (
                   <>
-                    <DropdownMenuItem onClick={() => navigate("/find-researchers")}>
+                    <DropdownMenuItem onClick={() => navigate("/research-collab")}>
                       <FlaskConical className="w-4 h-4 mr-2" />
-                      Find Researchers
+                      Research Collab
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/connections")} className="relative">
                       <MessageSquare className="w-4 h-4 mr-2" />
