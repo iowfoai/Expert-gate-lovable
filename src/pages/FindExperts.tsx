@@ -8,7 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Star, MapPin, Calendar, Users } from "lucide-react";
+import { Search, Star, MapPin, Calendar, Users, Globe } from "lucide-react";
 import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -24,6 +24,7 @@ interface Expert {
   country: string | null;
   is_available: boolean | null;
   verification_status: string | null;
+  preferred_languages: string[] | null;
 }
 
 const FindExperts = () => {
@@ -41,7 +42,7 @@ const FindExperts = () => {
     const fetchExperts = async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, is_available, verification_status')
+        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, is_available, verification_status, preferred_languages')
         .eq('user_type', 'expert')
         .eq('verification_status', 'verified');
 
@@ -289,6 +290,13 @@ const FindExperts = () => {
                     </span>
                   </div>
 
+                  {expert.preferred_languages && expert.preferred_languages.length > 0 && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Globe className="w-4 h-4" />
+                      <span>{expert.preferred_languages.join(', ')}</span>
+                    </div>
+                  )}
+
                   {expert.bio && (
                     <p className="text-sm text-muted-foreground line-clamp-2">
                       {expert.bio}
@@ -317,6 +325,7 @@ const FindExperts = () => {
           onOpenChange={setRequestDialogOpen}
           expertName={selectedExpert.full_name}
           expertId={selectedExpert.id}
+          expertLanguages={selectedExpert.preferred_languages || ['English']}
         />
       )}
       

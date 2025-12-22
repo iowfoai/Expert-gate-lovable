@@ -308,6 +308,7 @@ export type Database = {
           is_available: boolean | null
           is_deleted: boolean
           monthly_interview_limit: number | null
+          preferred_languages: string[] | null
           professional_website: string | null
           profile_image_url: string | null
           publications: string | null
@@ -339,6 +340,7 @@ export type Database = {
           is_available?: boolean | null
           is_deleted?: boolean
           monthly_interview_limit?: number | null
+          preferred_languages?: string[] | null
           professional_website?: string | null
           profile_image_url?: string | null
           publications?: string | null
@@ -370,6 +372,7 @@ export type Database = {
           is_available?: boolean | null
           is_deleted?: boolean
           monthly_interview_limit?: number | null
+          preferred_languages?: string[] | null
           professional_website?: string | null
           profile_image_url?: string | null
           publications?: string | null

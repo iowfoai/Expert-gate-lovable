@@ -9,7 +9,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Search, UserPlus, Check, Clock, Users, Building2, FlaskConical, Handshake } from "lucide-react";
+import { Search, UserPlus, Check, Clock, Users, Building2, FlaskConical, Handshake, Globe } from "lucide-react";
 import CollaborationRequestDialog from "@/components/CollaborationRequestDialog";
 
 interface Researcher {
@@ -20,6 +20,7 @@ interface Researcher {
   research_field: string[] | null;
   profile_image_url: string | null;
   country: string | null;
+  preferred_languages: string[] | null;
 }
 
 interface ConnectionStatus {
@@ -108,7 +109,7 @@ const ResearchersDirectory = () => {
       // Fetch all researchers except current user
       const { data: researchersData, error } = await supabase
         .from('profiles')
-        .select('id, full_name, bio, research_institution, research_field, profile_image_url, country')
+        .select('id, full_name, bio, research_institution, research_field, profile_image_url, country, preferred_languages')
         .eq('user_type', 'researcher')
         .neq('id', userId);
 
@@ -393,6 +394,13 @@ const ResearchersDirectory = () => {
                         </Badge>
                       )}
                     </div>
+                    )}
+
+                  {researcher.preferred_languages && researcher.preferred_languages.length > 0 && (
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Globe className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>{researcher.preferred_languages.join(', ')}</span>
+                    </div>
                   )}
 
                   {researcher.bio && (
@@ -470,6 +478,7 @@ const ResearchersDirectory = () => {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           researcher={selectedResearcher}
+          researcherLanguages={selectedResearcher.preferred_languages || ['English']}
           onSuccess={() => handleCollaborationSent(selectedResearcher.id)}
         />
       )}

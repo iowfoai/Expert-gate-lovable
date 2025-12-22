@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { countries } from "@/lib/countries";
 import InstitutionCombobox from "@/components/InstitutionCombobox";
+import LanguageMultiSelect from "@/components/LanguageMultiSelect";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -43,6 +44,9 @@ const Auth = () => {
   // Researcher-specific fields
   const [researchInstitution, setResearchInstitution] = useState("");
   const [researchField, setResearchField] = useState("");
+
+  // Common field for both types
+  const [preferredLanguages, setPreferredLanguages] = useState<string[]>(["English"]);
 
   // Check if user is already logged in and redirect based on user type
   useEffect(() => {
@@ -141,7 +145,8 @@ const Auth = () => {
         full_name: fullName,
         user_type: userType,
         country: country || null,
-        bio: bio || null
+        bio: bio || null,
+        preferred_languages: preferredLanguages.length > 0 ? preferredLanguages : ['English']
       };
       if (userType === "expert") {
         metadata.education_level = educationLevel;
@@ -252,6 +257,19 @@ const Auth = () => {
                           </SelectItem>)}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Preferred Languages - shown for both user types */}
+                  <div className="space-y-2">
+                    <Label>Preferred Languages *</Label>
+                    <LanguageMultiSelect
+                      value={preferredLanguages}
+                      onChange={setPreferredLanguages}
+                      placeholder="Select your preferred languages..."
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Select the languages you're comfortable communicating in
+                    </p>
                   </div>
                   
                   {userType === "expert" && <>
