@@ -10,10 +10,27 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, X, Clock, Loader2 } from "lucide-react";
+import { Check, X, Loader2, Eye, ArrowLeft, GraduationCap, Building, Globe, Languages, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { CollaborationPost } from "./CollaborationPostCard";
+
+interface ApplicantProfile {
+  id: string;
+  full_name: string;
+  profile_image_url: string | null;
+  user_type: string;
+  institution?: string | null;
+  research_institution?: string | null;
+  bio?: string | null;
+  education_level?: string | null;
+  field_of_expertise?: string[] | null;
+  research_field?: string[] | null;
+  years_of_experience?: number | null;
+  country?: string | null;
+  preferred_languages?: string[] | null;
+  professional_website?: string | null;
+}
 
 interface Application {
   id: string;
@@ -21,14 +38,7 @@ interface Application {
   message: string | null;
   status: string;
   created_at: string;
-  applicant?: {
-    id: string;
-    full_name: string;
-    profile_image_url: string | null;
-    user_type: string;
-    institution?: string | null;
-    research_institution?: string | null;
-  };
+  applicant?: ApplicantProfile;
 }
 
 interface ViewApplicationsDialogProps {
@@ -48,6 +58,7 @@ const ViewApplicationsDialog = ({
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<Application[]>([]);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [viewingApplicant, setViewingApplicant] = useState<ApplicantProfile | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -74,7 +85,7 @@ const ViewApplicationsDialog = ({
       const applicantIds = apps.map((a) => a.applicant_id);
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, full_name, profile_image_url, user_type, institution, research_institution")
+        .select("id, full_name, profile_image_url, user_type, institution, research_institution, bio, education_level, field_of_expertise, research_field, years_of_experience, country, preferred_languages, professional_website")
         .in("id", applicantIds);
 
       const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
@@ -203,8 +214,124 @@ const ViewApplicationsDialog = ({
   const getInitials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
+  const formatEducation = (level: string | null | undefined) => {
+    if (!level) return null;
+    const map: Record<string, string> = {
+      bachelors: "Bachelor's",
+      masters: "Master's",
+      phd: "PhD",
+      postdoc: "Postdoc",
+      professor: "Professor",
+      industry_professional: "Industry Professional",
+    };
+    return map[level] || level;
+  };
+
   const pendingApps = applications.filter((a) => a.status === "pending");
   const processedApps = applications.filter((a) => a.status !== "pending");
+
+  // Applicant detail view
+  if (viewingApplicant) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => setViewingApplicant(null)}>
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <DialogTitle>Applicant Details</DialogTitle>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Avatar className="w-16 h-16">
+                <AvatarImage src={viewingApplicant.profile_image_url || ""} />
+                <AvatarFallback className="text-lg">
+                  {getInitials(viewingApplicant.full_name)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="font-semibold text-lg">{viewingApplicant.full_name}</h3>
+                <Badge variant="secondary" className="capitalize">
+                  {viewingApplicant.user_type}
+                </Badge>
+              </div>
+            </div>
+
+            {viewingApplicant.bio && (
+              <p className="text-sm text-muted-foreground">{viewingApplicant.bio}</p>
+            )}
+
+            <div className="grid gap-3">
+              {(viewingApplicant.institution || viewingApplicant.research_institution) && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Building className="w-4 h-4 text-muted-foreground" />
+                  <span>{viewingApplicant.institution || viewingApplicant.research_institution}</span>
+                </div>
+              )}
+
+              {viewingApplicant.education_level && (
+                <div className="flex items-center gap-2 text-sm">
+                  <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                  <span>{formatEducation(viewingApplicant.education_level)}</span>
+                </div>
+              )}
+
+              {viewingApplicant.years_of_experience && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Briefcase className="w-4 h-4 text-muted-foreground" />
+                  <span>{viewingApplicant.years_of_experience} years of experience</span>
+                </div>
+              )}
+
+              {viewingApplicant.country && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Globe className="w-4 h-4 text-muted-foreground" />
+                  <span>{viewingApplicant.country}</span>
+                </div>
+              )}
+
+              {viewingApplicant.preferred_languages && viewingApplicant.preferred_languages.length > 0 && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Languages className="w-4 h-4 text-muted-foreground" />
+                  <span>{viewingApplicant.preferred_languages.join(", ")}</span>
+                </div>
+              )}
+
+              {viewingApplicant.professional_website && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Globe className="w-4 h-4 text-muted-foreground" />
+                  <a 
+                    href={viewingApplicant.professional_website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-accent hover:underline"
+                  >
+                    {viewingApplicant.professional_website}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {(viewingApplicant.field_of_expertise?.length || viewingApplicant.research_field?.length) && (
+              <div>
+                <p className="text-sm font-medium mb-2">Fields</p>
+                <div className="flex flex-wrap gap-1">
+                  {(viewingApplicant.field_of_expertise || viewingApplicant.research_field || []).map((field) => (
+                    <Badge key={field} variant="outline" className="text-xs">
+                      {field}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -255,6 +382,13 @@ const ViewApplicationsDialog = ({
                       <div className="flex gap-2">
                         <Button
                           size="sm"
+                          variant="secondary"
+                          onClick={() => app.applicant && setViewingApplicant(app.applicant)}
+                        >
+                          <Eye className="w-4 h-4 mr-1" /> Details
+                        </Button>
+                        <Button
+                          size="sm"
                           className="flex-1"
                           onClick={() => handleAccept(app)}
                           disabled={processingId === app.id}
@@ -270,7 +404,6 @@ const ViewApplicationsDialog = ({
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1"
                           onClick={() => handleReject(app.id)}
                           disabled={processingId === app.id}
                         >
