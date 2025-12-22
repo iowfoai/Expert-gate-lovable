@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Clock, MessageSquare, Bell, CheckCircle, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Users, Clock, MessageSquare, Bell, CheckCircle, AlertTriangle, ShieldCheck, LayoutDashboard } from "lucide-react";
 
 interface PendingRequest {
   id: string;
@@ -226,6 +226,18 @@ const ExpertHome = () => {
             </div>
           </div>
         )}
+
+        {/* Dashboard Button */}
+        <div className="flex justify-center mb-12">
+          <Button 
+            onClick={() => navigate('/expert-dashboard')} 
+            size="lg"
+            className="bg-foreground text-background hover:bg-foreground/90 px-8 py-6 text-lg font-semibold gap-3"
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            Go to Dashboard
+          </Button>
+        </div>
 
         {/* Hero Section */}
         <div className="text-center mb-16">
