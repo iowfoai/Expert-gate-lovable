@@ -10,7 +10,8 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
-import { Search, UserPlus, Check, Clock, Users, GraduationCap, Building2, AlertCircle } from "lucide-react";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
+import { Search, UserPlus, Check, Clock, Users, GraduationCap, Building2, AlertCircle, X, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Expert {
@@ -34,12 +35,14 @@ const ExpertsDirectory = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isLoading: authLoading, userId: currentUserId } = useUserTypeGuard(['expert']);
+  const { isAdmin } = useAdminStatus();
   const [experts, setExperts] = useState<Expert[]>([]);
   const [filteredExperts, setFilteredExperts] = useState<Expert[]>([]);
   const [connectionStatuses, setConnectionStatuses] = useState<ConnectionStatus>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentUserVerified, setCurrentUserVerified] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading || !currentUserId) return;
@@ -201,6 +204,35 @@ const ExpertsDirectory = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  const handleAdminDelete = async (expertId: string) => {
+    if (!isAdmin) return;
+    
+    setDeletingId(expertId);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ 
+        is_deleted: true,
+        deleted_at: new Date().toISOString()
+      })
+      .eq("id", expertId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "User Deleted",
+        description: "The user account has been deactivated"
+      });
+      setExperts(prev => prev.filter(e => e.id !== expertId));
+      setFilteredExperts(prev => prev.filter(e => e.id !== expertId));
+    }
+    setDeletingId(null);
+  };
+
   if (loading || authLoading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -260,7 +292,22 @@ const ExpertsDirectory = () => {
         {/* Experts Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredExperts.map((expert) => (
-            <Card key={expert.id} className="hover:border-accent/50 transition-all hover:shadow-lg">
+            <Card key={expert.id} className="hover:border-accent/50 transition-all hover:shadow-lg relative">
+              {/* Admin delete button */}
+              {isAdmin && (
+                <button
+                  onClick={() => handleAdminDelete(expert.id)}
+                  disabled={deletingId === expert.id}
+                  className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                  title="Delete user (Admin)"
+                >
+                  {deletingId === expert.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <X className="w-4 h-4" />
+                  )}
+                </button>
+              )}
               <CardContent className="p-6">
                 <div className="flex items-start gap-4 mb-4">
                   <Avatar className="w-14 h-14">
