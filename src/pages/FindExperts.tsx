@@ -48,7 +48,8 @@ const FindExperts = () => {
         .from('profiles')
         .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, is_available, verification_status, preferred_languages, is_test_account')
         .eq('user_type', 'expert')
-        .eq('verification_status', 'verified');
+        .eq('verification_status', 'verified')
+        .eq('is_test_account', false);
 
       if (error) {
         console.error('Error fetching experts:', error);

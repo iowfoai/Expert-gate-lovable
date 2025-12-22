@@ -182,6 +182,7 @@ const ResearchersDirectory = () => {
         .from('profiles')
         .select('id, full_name, bio, research_institution, research_field, profile_image_url, country, preferred_languages, is_test_account')
         .eq('user_type', 'researcher')
+        .eq('is_test_account', false)
         .neq('id', userId);
 
       if (error) {
