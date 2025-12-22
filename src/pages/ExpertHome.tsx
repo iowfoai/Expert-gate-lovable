@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Clock, MessageSquare, Bell, CheckCircle, AlertTriangle, ShieldCheck, LayoutDashboard } from "lucide-react";
+import { Users, Clock, MessageSquare, Bell, CheckCircle, AlertTriangle, LayoutDashboard, ArrowLeftRight, Handshake, Search } from "lucide-react";
 
 interface PendingRequest {
   id: string;
@@ -241,8 +241,9 @@ const ExpertHome = () => {
 
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent/10 mb-6">
-            <CheckCircle className="w-10 h-10 text-accent" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent mb-6">
+            <ArrowLeftRight className="w-4 h-4" />
+            <span className="text-sm font-medium">Bridging Researchers & Experts</span>
           </div>
           {interviewRequests > 0 ? (
             <>
@@ -256,20 +257,20 @@ const ExpertHome = () => {
           ) : (
             <>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                All done!
+                Welcome back!
               </h1>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-accent mb-6">
-                Now wait for researchers to contact you
+              <h2 className="text-2xl md:text-3xl font-semibold text-foreground/80 mb-6">
+                Your expertise is ready to make an impact
               </h2>
             </>
           )}
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Your expert profile is live. Researchers can now find you and request interviews.
+            Share your knowledge through interviews, connect with fellow experts, and collaborate on research projects.
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           <Card className="bg-card/50 backdrop-blur border-border/50">
             <CardContent className="flex items-center gap-4 p-6">
               <div className="p-3 rounded-full bg-accent/10">
@@ -293,19 +294,48 @@ const ExpertHome = () => {
               </div>
             </CardContent>
           </Card>
-
         </div>
 
-        {/* Meanwhile Section */}
-        <div className="text-center mb-8">
-          <p className="text-xl italic text-muted-foreground mb-2">Now in the meanwhile...</p>
-          <h3 className="text-2xl md:text-3xl font-semibold mb-6">Connect with other experts</h3>
-          <Link to="/experts-directory">
-            <Button size="lg" className="gap-2">
-              <Users className="w-5 h-5" />
-              Browse Expert Directory
-            </Button>
-          </Link>
+        {/* Quick Actions - What You Can Do */}
+        <div className="mb-12">
+          <h3 className="text-2xl font-bold text-center mb-8">What You Can Do on ExpertGate</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="hover:border-accent/50 transition-colors cursor-pointer group" onClick={() => navigate('/experts-directory')}>
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
+                  <Users className="w-7 h-7 text-accent" />
+                </div>
+                <h4 className="font-semibold mb-2">Find Peers</h4>
+                <p className="text-muted-foreground text-sm">
+                  Connect with other experts in your field to expand your professional network
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:border-accent/50 transition-colors cursor-pointer group" onClick={() => navigate('/research-collab')}>
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
+                  <Handshake className="w-7 h-7 text-accent" />
+                </div>
+                <h4 className="font-semibold mb-2">Research Collaboration</h4>
+                <p className="text-muted-foreground text-sm">
+                  Browse collaboration opportunities and apply to join research projects
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:border-accent/50 transition-colors cursor-pointer group" onClick={() => navigate('/expert-dashboard')}>
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
+                  <MessageSquare className="w-7 h-7 text-accent" />
+                </div>
+                <h4 className="font-semibold mb-2">Interview Requests</h4>
+                <p className="text-muted-foreground text-sm">
+                  Manage interview requests from researchers seeking your expertise
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Pending Connection Requests */}
@@ -359,23 +389,33 @@ const ExpertHome = () => {
           </Card>
         )}
 
-        {/* Quick Actions */}
+        {/* Profile Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
           <Card className="hover:border-accent/50 transition-colors cursor-pointer" onClick={() => navigate('/expert-dashboard')}>
-            <CardContent className="p-6">
-              <h4 className="font-semibold mb-2">View Dashboard</h4>
-              <p className="text-muted-foreground text-sm">
-                Manage your interview requests and see your schedule
-              </p>
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 rounded-full bg-muted">
+                <LayoutDashboard className="w-5 h-5 text-foreground" />
+              </div>
+              <div>
+                <h4 className="font-semibold mb-1">View Dashboard</h4>
+                <p className="text-muted-foreground text-sm">
+                  Manage interviews, connections, and your schedule
+                </p>
+              </div>
             </CardContent>
           </Card>
 
           <Card className="hover:border-accent/50 transition-colors cursor-pointer" onClick={() => navigate('/profile')}>
-            <CardContent className="p-6">
-              <h4 className="font-semibold mb-2">Edit Profile</h4>
-              <p className="text-muted-foreground text-sm">
-                Update your expertise, bio, and availability
-              </p>
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 rounded-full bg-muted">
+                <Search className="w-5 h-5 text-foreground" />
+              </div>
+              <div>
+                <h4 className="font-semibold mb-1">Edit Profile</h4>
+                <p className="text-muted-foreground text-sm">
+                  Update your expertise, bio, and availability
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
