@@ -365,7 +365,14 @@ const Auth = () => {
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label htmlFor="research-institution">Research Institution (optional)</Label>
-                          <Input id="research-institution" type="text" placeholder="University or Organization" value={researchInstitution} onChange={e => setResearchInstitution(e.target.value)} />
+                          <InstitutionCombobox
+                            value={researchInstitution}
+                            onChange={setResearchInstitution}
+                            placeholder="Search institution..."
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Search for your institution or type your own if not listed.
+                          </p>
                         </div>
                         
                         <div className="space-y-2">
