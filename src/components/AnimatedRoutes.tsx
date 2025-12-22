@@ -23,7 +23,6 @@ import AdminPanel from "@/pages/AdminPanel";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import EthicsPolicy from "@/pages/EthicsPolicy";
-import HowItWorks from "@/pages/HowItWorks";
 import ExpertProfile from "@/pages/ExpertProfile";
 
 const AnimatedRoutes = () => {
@@ -52,7 +51,6 @@ const AnimatedRoutes = () => {
         <Route path="/privacy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
         <Route path="/terms" element={<PageTransition><TermsOfService /></PageTransition>} />
         <Route path="/ethics" element={<PageTransition><EthicsPolicy /></PageTransition>} />
-        <Route path="/how-it-works" element={<PageTransition><HowItWorks /></PageTransition>} />
         <Route path="/expert/:id" element={<DeletedAccountGuard><PageTransition><ExpertProfile /></PageTransition></DeletedAccountGuard>} />
         
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
