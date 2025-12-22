@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -324,7 +324,9 @@ const ExpertsDirectory = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate">{expert.full_name}</h3>
+                    <Link to={`/expert/${expert.id}`} className="font-semibold text-lg truncate hover:text-accent transition-colors hover:underline block">
+                      {expert.full_name}
+                    </Link>
                     {expert.institution && (
                       <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
                         <Building2 className="w-3 h-3 flex-shrink-0" />
@@ -361,11 +363,6 @@ const ExpertsDirectory = () => {
                     </div>
                   )}
 
-                  {expert.bio && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {expert.bio}
-                    </p>
-                  )}
                 </div>
 
                 {/* Connection Button */}
