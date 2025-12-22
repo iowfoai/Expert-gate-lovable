@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import RequestInterviewDialog from "@/components/RequestInterviewDialog";
@@ -246,7 +247,9 @@ const FindExperts = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{expert.full_name}</h3>
+                      <Link to={`/expert/${expert.id}`} className="font-semibold text-lg hover:text-accent transition-colors hover:underline">
+                        {expert.full_name}
+                      </Link>
                       {expert.education_level && (
                         <p className="text-sm text-muted-foreground">{getEducationLabel(expert.education_level)}</p>
                       )}
@@ -305,11 +308,6 @@ const FindExperts = () => {
                     </div>
                   )}
 
-                  {expert.bio && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {expert.bio}
-                    </p>
-                  )}
                 </CardContent>
                 
                 <CardFooter>
