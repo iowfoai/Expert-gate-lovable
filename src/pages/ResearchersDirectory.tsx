@@ -14,6 +14,8 @@ import { useAdminStatus } from "@/hooks/useAdminStatus";
 import CollaborationRequestDialog from "@/components/CollaborationRequestDialog";
 import CreateCollaborationPostDialog from "@/components/CreateCollaborationPostDialog";
 import CollaborationPostCard, { type CollaborationPost } from "@/components/CollaborationPostCard";
+import { EditableText } from "@/components/EditableText";
+import { EditableProfileField } from "@/components/EditableProfileField";
 
 interface Researcher {
   id: string;
@@ -440,10 +442,18 @@ const ResearchersDirectory = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/10 mb-4">
             <FlaskConical className="w-8 h-8 text-accent" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Research Collab</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Find collaborators for your research projects or join exciting ongoing research
-          </p>
+          <EditableText 
+            contentKey="research_collab_title" 
+            defaultValue="Research Collab" 
+            as="h1" 
+            className="text-3xl md:text-4xl font-bold mb-4" 
+          />
+          <EditableText 
+            contentKey="research_collab_subtitle" 
+            defaultValue="Find collaborators for your research projects or join exciting ongoing research" 
+            as="p" 
+            className="text-muted-foreground max-w-2xl mx-auto" 
+          />
         </div>
 
         {/* Collaboration Posts Section */}
@@ -451,7 +461,12 @@ const ResearchersDirectory = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Megaphone className="w-5 h-5 text-accent" />
-              <h2 className="text-xl font-semibold">Calls for Collaboration</h2>
+              <EditableText 
+                contentKey="collab_posts_heading" 
+                defaultValue="Calls for Collaboration" 
+                as="h2" 
+                className="text-xl font-semibold" 
+              />
             </div>
             <Button onClick={() => setCreatePostDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
@@ -483,7 +498,12 @@ const ResearchersDirectory = () => {
         {/* Researchers Section */}
         <div className="border-t pt-12">
           <div className="text-center mb-8">
-            <h2 className="text-xl font-semibold mb-2">Browse Researchers</h2>
+            <EditableText 
+              contentKey="browse_researchers_heading" 
+              defaultValue="Browse Researchers" 
+              as="h2" 
+              className="text-xl font-semibold mb-2" 
+            />
             <p className="text-muted-foreground">
               {userType === 'expert' 
                 ? 'Find researchers to collaborate with on exciting projects'
@@ -543,11 +563,23 @@ const ResearchersDirectory = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-lg truncate">{researcher.full_name}</h3>
+                      <h3 className="font-semibold text-lg truncate">
+                        <EditableProfileField
+                          userId={researcher.id}
+                          field="full_name"
+                          value={researcher.full_name}
+                          className="font-semibold text-lg"
+                        />
+                      </h3>
                       {researcher.research_institution && (
                         <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
                           <Building2 className="w-3 h-3 flex-shrink-0" />
-                          {researcher.research_institution}
+                          <EditableProfileField
+                            userId={researcher.id}
+                            field="research_institution"
+                            value={researcher.research_institution}
+                            className="text-sm text-muted-foreground"
+                          />
                         </p>
                       )}
                     </div>

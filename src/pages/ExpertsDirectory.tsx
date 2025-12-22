@@ -13,6 +13,8 @@ import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { Search, UserPlus, Check, Clock, Users, GraduationCap, Building2, AlertCircle, X, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { EditableText } from "@/components/EditableText";
+import { EditableProfileField } from "@/components/EditableProfileField";
 
 interface Expert {
   id: string;
@@ -257,10 +259,18 @@ const ExpertsDirectory = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/10 mb-4">
             <Users className="w-8 h-8 text-accent" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Expert Directory</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Connect with fellow experts, share knowledge, and expand your professional network
-          </p>
+          <EditableText 
+            contentKey="experts_directory_title" 
+            defaultValue="Expert Directory" 
+            as="h1" 
+            className="text-3xl md:text-4xl font-bold mb-4" 
+          />
+          <EditableText 
+            contentKey="experts_directory_subtitle" 
+            defaultValue="Connect with fellow experts, share knowledge, and expand your professional network" 
+            as="p" 
+            className="text-muted-foreground max-w-2xl mx-auto" 
+          />
         </div>
 
         {/* Verification Warning */}
@@ -326,12 +336,22 @@ const ExpertsDirectory = () => {
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <Link to={`/expert/${expert.id}`} className="font-semibold text-lg truncate hover:text-accent transition-colors hover:underline block">
-                      {expert.full_name}
+                      <EditableProfileField
+                        userId={expert.id}
+                        field="full_name"
+                        value={expert.full_name}
+                        className="font-semibold text-lg"
+                      />
                     </Link>
                     {expert.institution && (
                       <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
                         <Building2 className="w-3 h-3 flex-shrink-0" />
-                        {expert.institution}
+                        <EditableProfileField
+                          userId={expert.id}
+                          field="institution"
+                          value={expert.institution}
+                          className="text-sm text-muted-foreground"
+                        />
                       </p>
                     )}
                   </div>
