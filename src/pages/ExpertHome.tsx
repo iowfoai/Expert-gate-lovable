@@ -145,7 +145,7 @@ const ExpertHome = () => {
                       <li>• An admin will review your credentials and expertise</li>
                       <li>• Verification typically takes 1-3 business days</li>
                       <li>• You'll receive an email once your account is verified</li>
-                      <li>• Until then, you can browse the website but won't appear in expert directories</li>
+                      <li>• Once verified, you can receive interview requests, connect with peers, and join research collaborations</li>
                     </ul>
                   </div>
                 </div>
@@ -245,13 +245,17 @@ const ExpertHome = () => {
             <ArrowLeftRight className="w-4 h-4" />
             <span className="text-sm font-medium">Bridging Researchers & Experts</span>
           </div>
-          {interviewRequests > 0 ? (
+          {interviewRequests > 0 || pendingRequests.length > 0 ? (
             <>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-accent">
-                Great news!
+                You have activity!
               </h1>
               <h2 className="text-2xl md:text-3xl font-semibold text-foreground/80 mb-6">
-                Researchers want to interview you
+                {interviewRequests > 0 && pendingRequests.length > 0 
+                  ? "Interview requests and connection requests are waiting"
+                  : interviewRequests > 0 
+                    ? "Researchers want to interview you"
+                    : "Experts want to connect with you"}
               </h2>
             </>
           ) : (
