@@ -108,9 +108,6 @@ const Navigation = () => {
                   <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
                 )}
               </Link>
-              <Link to="/expert-dashboard" className={linkClass}>
-                Dashboard
-              </Link>
             </>
           ) : user ? (
             <>
