@@ -97,7 +97,7 @@ const Navigation = () => {
                 Home
               </Link>
               <Link to="/experts-directory" className={linkClass}>
-                Interview Experts
+                Find Peers
               </Link>
               <Link to="/research-collab" className={linkClass}>
                 Research Collab
@@ -165,7 +165,7 @@ const Navigation = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/experts-directory")}>
                       <Users className="w-4 h-4 mr-2" />
-                      Interview Experts
+                      Find Peers
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/research-collab")}>
                       <FlaskConical className="w-4 h-4 mr-2" />
