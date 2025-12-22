@@ -36,7 +36,7 @@ const AnimatedRoutes = () => {
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/password-reset" element={<PageTransition><PasswordReset /></PageTransition>} />
         <Route path="/find-experts" element={<DeletedAccountGuard><PageTransition><FindExperts /></PageTransition></DeletedAccountGuard>} />
-        <Route path="/find-researchers" element={<DeletedAccountGuard><PageTransition><ResearchersDirectory /></PageTransition></DeletedAccountGuard>} />
+        <Route path="/research-collab" element={<DeletedAccountGuard><PageTransition><ResearchersDirectory /></PageTransition></DeletedAccountGuard>} />
         <Route path="/expert-dashboard" element={<DeletedAccountGuard><PageTransition><ExpertDashboard /></PageTransition></DeletedAccountGuard>} />
         <Route path="/expert-home" element={<DeletedAccountGuard><PageTransition><ExpertHome /></PageTransition></DeletedAccountGuard>} />
         <Route path="/experts-directory" element={<DeletedAccountGuard><PageTransition><ExpertsDirectory /></PageTransition></DeletedAccountGuard>} />
