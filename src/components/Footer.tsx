@@ -68,7 +68,7 @@ const Footer = () => {
               <span>ExpertGate</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
-              Bridging researchers and experts in the most efficient way possible.
+              Bridging Researchers & Experts conveniently & efficiently.
             </p>
             <div className="flex gap-3">
               <a 
