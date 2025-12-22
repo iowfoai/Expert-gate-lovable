@@ -21,11 +21,11 @@ const About = () => {
           
           <div className="prose prose-lg max-w-none mb-12">
             <p className="text-muted-foreground leading-relaxed">
-              ExpertGate was founded on a simple observation: meaningful knowledge exchange happens when 
-              researchers and experts can easily find and connect with each other. Whether you're a student 
-              working on a thesis, a journalist investigating a story, a professional researcher conducting 
-              a study, or an expert looking to collaborate with peers — finding the right people can be 
-              a major challenge.
+              ExpertGate was founded on a simple observation: meaningful collaboration for research among 
+              researchers and between researchers and experts is an arbitrarily long and inefficient process. 
+              Whether you're a student working on a thesis, a journalist investigating a story, a professional 
+              researcher conducting a study, or an expert looking to collaborate with peers — finding the 
+              right people in due time can be a major challenge.
             </p>
             
             <p className="text-muted-foreground leading-relaxed mt-4">
