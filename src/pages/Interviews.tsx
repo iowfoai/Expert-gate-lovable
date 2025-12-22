@@ -355,7 +355,7 @@ const Interviews = () => {
                           className="mt-4" 
                           onClick={() => navigate("/find-experts")}
                         >
-                          Find Experts
+                          Interview Experts
                         </Button>
                       )}
                     </CardContent>

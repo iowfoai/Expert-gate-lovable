@@ -32,7 +32,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/find-experts" className="text-muted-foreground hover:text-accent transition-colors">
-                  Find Experts
+                  Interview Experts
                 </Link>
               </li>
               <li>

@@ -97,7 +97,7 @@ const Navigation = () => {
                 Home
               </Link>
               <Link to="/experts-directory" className={linkClass}>
-                Find Experts
+                Interview Experts
               </Link>
               <Link to="/research-collab" className={linkClass}>
                 Research Collab
@@ -115,7 +115,7 @@ const Navigation = () => {
           ) : user ? (
             <>
               <Link to="/find-experts" className={linkClass}>
-                Find Experts
+                Interview Experts
               </Link>
               <Link to="/research-collab" className={linkClass}>
                 Research Collab
@@ -133,7 +133,7 @@ const Navigation = () => {
           ) : (
             <>
               <Link to="/find-experts" className={linkClass}>
-                Find Experts
+                Interview Experts
               </Link>
               <Link to="/how-it-works" className={linkClass}>
                 How It Works
@@ -168,7 +168,7 @@ const Navigation = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/experts-directory")}>
                       <Users className="w-4 h-4 mr-2" />
-                      Find Experts
+                      Interview Experts
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/research-collab")}>
                       <FlaskConical className="w-4 h-4 mr-2" />

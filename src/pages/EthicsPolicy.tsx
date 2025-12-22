@@ -29,7 +29,7 @@ const EthicsPolicy = () => {
                 <Shield className="w-10 h-10 text-accent mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Expert Protection</h3>
                 <p className="text-muted-foreground">
-                  We implement interview limits to prevent expert fatigue and ensure sustainable participation 
+                  We empower experts to control their availability and ensure sustainable participation 
                   in research activities.
                 </p>
               </CardContent>
@@ -82,7 +82,7 @@ const EthicsPolicy = () => {
                 </h3>
                 <ul className="space-y-2 text-muted-foreground mb-6">
                   <li>• Clearly communicate research objectives and intended use of information</li>
-                  <li>• Respect expert availability and interview limits</li>
+                  <li>• Respect expert availability and scheduling preferences</li>
                   <li>• Obtain appropriate institutional ethics approval when required</li>
                   <li>• Properly cite and attribute expert contributions</li>
                   <li>• Maintain confidentiality when requested</li>
@@ -163,7 +163,7 @@ const EthicsPolicy = () => {
                 </li>
                 <li className="flex gap-2">
                   <span className="text-accent">✓</span>
-                  <span>We enforce interview limits to protect expert well-being</span>
+                  <span>We give experts full control over their availability</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-accent">✓</span>

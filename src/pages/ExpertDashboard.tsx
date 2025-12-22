@@ -26,8 +26,6 @@ interface Profile {
   years_of_experience: number | null;
   profile_image_url: string | null;
   is_available: boolean | null;
-  interviews_remaining: number | null;
-  monthly_interview_limit: number | null;
 }
 
 interface InterviewRequest {

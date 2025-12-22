@@ -74,11 +74,10 @@ const TermsOfService = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">6. Interview Limits</h2>
+              <h2 className="text-2xl font-semibold mb-4">6. Expert Availability</h2>
               <p className="text-muted-foreground leading-relaxed">
-                To protect experts from interview fatigue, we impose monthly interview limits. These limits 
-                are set by our platform and may be adjusted. Researchers must respect these limits and not 
-                attempt to circumvent them.
+                Experts control their own availability and scheduling. Researchers must respect expert 
+                availability settings and not attempt to pressure experts for interviews.
               </p>
             </section>
 

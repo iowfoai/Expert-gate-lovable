@@ -282,17 +282,6 @@ const ExpertHome = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/50 backdrop-blur border-border/50">
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="p-3 rounded-full bg-secondary/50">
-                <Clock className="w-6 h-6 text-secondary-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{profile?.interviews_remaining || 0}</p>
-                <p className="text-muted-foreground">Interviews Remaining</p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Meanwhile Section */}
