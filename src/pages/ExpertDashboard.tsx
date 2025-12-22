@@ -9,12 +9,28 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarIcon, Star, Users, Clock, CheckCircle, XCircle, FileText, MessageCircle, Trash2, AlertTriangle } from "lucide-react";
+import { Calendar as CalendarIcon, Star, Users, Clock, CheckCircle, XCircle, FileText, MessageCircle, Trash2, AlertTriangle, Handshake, UserMinus, Eye } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { useNavigate } from "react-router-dom";
 import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Profile {
   id: string;
@@ -48,6 +64,28 @@ interface InterviewRequest {
   };
 }
 
+interface CollabPost {
+  id: string;
+  title: string;
+  description: string;
+  field_of_study: string[];
+  status: string;
+  created_at: string;
+  group?: {
+    id: string;
+    name: string;
+    members: {
+      id: string;
+      user_id: string;
+      role: string;
+      user: {
+        full_name: string;
+        profile_image_url: string | null;
+      };
+    }[];
+  };
+}
+
 const ExpertDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -58,9 +96,15 @@ const ExpertDashboard = () => {
   const [upcomingInterviews, setUpcomingInterviews] = useState<InterviewRequest[]>([]);
   const [pastInterviews, setPastInterviews] = useState<InterviewRequest[]>([]);
   const [missedInterviews, setMissedInterviews] = useState<InterviewRequest[]>([]);
+  const [myCollabs, setMyCollabs] = useState<CollabPost[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [endCollabDialogOpen, setEndCollabDialogOpen] = useState(false);
+  const [selectedCollab, setSelectedCollab] = useState<CollabPost | null>(null);
+  const [membersDialogOpen, setMembersDialogOpen] = useState(false);
+  const [kickMemberDialogOpen, setKickMemberDialogOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (authLoading || !userId) return;
@@ -117,6 +161,63 @@ const ExpertDashboard = () => {
         }));
         
         setPastInterviews(requestsWithResearchers.filter(r => r.status === 'completed' || r.completed_at));
+      }
+
+      // Fetch collaboration posts authored by this user
+      const { data: collabPosts } = await supabase
+        .from('collaboration_posts')
+        .select('*')
+        .eq('author_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (collabPosts && collabPosts.length > 0) {
+        // Fetch groups for these posts
+        const postIds = collabPosts.map(p => p.id);
+        const { data: groups } = await supabase
+          .from('project_groups')
+          .select('id, name, post_id')
+          .in('post_id', postIds);
+
+        // Fetch members for these groups
+        let membersMap: Record<string, any[]> = {};
+        if (groups && groups.length > 0) {
+          const groupIds = groups.map(g => g.id);
+          const { data: members } = await supabase
+            .from('project_group_members')
+            .select('id, user_id, role, group_id')
+            .in('group_id', groupIds);
+
+          if (members && members.length > 0) {
+            const memberUserIds = members.map(m => m.user_id);
+            const { data: memberProfiles } = await supabase
+              .from('profiles')
+              .select('id, full_name, profile_image_url')
+              .in('id', memberUserIds);
+
+            members.forEach(member => {
+              const profile = memberProfiles?.find(p => p.id === member.user_id);
+              if (!membersMap[member.group_id]) membersMap[member.group_id] = [];
+              membersMap[member.group_id].push({
+                ...member,
+                user: profile || { full_name: 'Unknown', profile_image_url: null }
+              });
+            });
+          }
+        }
+
+        const collabsWithGroups = collabPosts.map(post => {
+          const group = groups?.find(g => g.post_id === post.id);
+          return {
+            ...post,
+            group: group ? {
+              id: group.id,
+              name: group.name,
+              members: membersMap[group.id] || []
+            } : undefined
+          };
+        });
+
+        setMyCollabs(collabsWithGroups);
       }
 
       setLoading(false);
@@ -318,6 +419,100 @@ const ExpertDashboard = () => {
     }
   };
 
+  const handleEndCollab = async () => {
+    if (!selectedCollab) return;
+
+    // Update the collaboration post status to closed
+    const { error: postError } = await supabase
+      .from('collaboration_posts')
+      .update({ status: 'closed' })
+      .eq('id', selectedCollab.id);
+
+    if (postError) {
+      toast({
+        title: "Error",
+        description: "Failed to close collaboration",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Remove all members from the group (except owner)
+    if (selectedCollab.group) {
+      await supabase
+        .from('project_group_members')
+        .delete()
+        .eq('group_id', selectedCollab.group.id)
+        .neq('role', 'owner');
+    }
+
+    setMyCollabs(prev => prev.map(c => 
+      c.id === selectedCollab.id ? { ...c, status: 'closed' } : c
+    ));
+    setEndCollabDialogOpen(false);
+    setSelectedCollab(null);
+
+    toast({
+      title: "Collaboration Ended",
+      description: "The collaboration has been closed and members have been removed"
+    });
+  };
+
+  const handleKickMember = async () => {
+    if (!selectedMember || !selectedCollab?.group) return;
+
+    const { error } = await supabase
+      .from('project_group_members')
+      .delete()
+      .eq('id', selectedMember.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to remove member",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Update local state
+    setMyCollabs(prev => prev.map(c => {
+      if (c.id === selectedCollab.id && c.group) {
+        return {
+          ...c,
+          group: {
+            ...c.group,
+            members: c.group.members.filter(m => m.id !== selectedMember.id)
+          }
+        };
+      }
+      return c;
+    }));
+
+    setKickMemberDialogOpen(false);
+    setSelectedMember(null);
+
+    toast({
+      title: "Member Removed",
+      description: "The member has been removed from the collaboration"
+    });
+  };
+
+  const openMembersDialog = (collab: CollabPost) => {
+    setSelectedCollab(collab);
+    setMembersDialogOpen(true);
+  };
+
+  const openEndCollabDialog = (collab: CollabPost) => {
+    setSelectedCollab(collab);
+    setEndCollabDialogOpen(true);
+  };
+
+  const openKickMemberDialog = (memberId: string, memberName: string) => {
+    setSelectedMember({ id: memberId, name: memberName });
+    setKickMemberDialogOpen(true);
+  };
+
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
@@ -512,7 +707,7 @@ const ExpertDashboard = () => {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="requests" className="mb-8">
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap">
             <TabsTrigger value="requests">
               Pending Requests {pendingRequests.length > 0 && `(${pendingRequests.length})`}
             </TabsTrigger>
@@ -523,6 +718,10 @@ const ExpertDashboard = () => {
               Missed {missedInterviews.length > 0 && `(${missedInterviews.length})`}
             </TabsTrigger>
             <TabsTrigger value="past">Completed</TabsTrigger>
+            <TabsTrigger value="collabs">
+              <Handshake className="w-4 h-4 mr-1" />
+              Collabs {myCollabs.length > 0 && `(${myCollabs.length})`}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests">
@@ -763,6 +962,87 @@ const ExpertDashboard = () => {
               )}
             </div>
           </TabsContent>
+
+          <TabsContent value="collabs">
+            <div className="space-y-4">
+              {myCollabs.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6 text-center text-muted-foreground">
+                    <Handshake className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p>You haven't created any collaboration posts yet</p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => navigate('/research-collab')}
+                    >
+                      Browse Collaborations
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                myCollabs.map((collab) => (
+                  <Card key={collab.id} className={collab.status === 'closed' ? 'opacity-60' : ''}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div className="flex-1 min-w-[200px]">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-lg">{collab.title}</h3>
+                            <Badge variant={collab.status === 'open' ? 'default' : 'secondary'}>
+                              {collab.status === 'open' ? 'Active' : 'Closed'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                            {collab.description}
+                          </p>
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {collab.field_of_study.slice(0, 3).map((field, idx) => (
+                              <Badge key={idx} variant="outline" className="text-xs">
+                                {field}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <CalendarIcon className="w-4 h-4" />
+                              Created {new Date(collab.created_at).toLocaleDateString()}
+                            </div>
+                            {collab.group && (
+                              <div className="flex items-center gap-1">
+                                <Users className="w-4 h-4" />
+                                {collab.group.members.length} member{collab.group.members.length !== 1 ? 's' : ''}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {collab.group && collab.group.members.length > 0 && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => openMembersDialog(collab)}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View Members
+                            </Button>
+                          )}
+                          {collab.status === 'open' && (
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => openEndCollabDialog(collab)}
+                            >
+                              <XCircle className="w-4 h-4 mr-1" />
+                              End Collab
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
           </div>
         </div>
@@ -776,6 +1056,84 @@ const ExpertDashboard = () => {
           request={selectedRequest}
         />
       )}
+
+      {/* End Collaboration Confirmation Dialog */}
+      <AlertDialog open={endCollabDialogOpen} onOpenChange={setEndCollabDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>End this collaboration?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will close the collaboration and remove all members from the group chat. 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleEndCollab} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              End Collaboration
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* View Members Dialog */}
+      <Dialog open={membersDialogOpen} onOpenChange={setMembersDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Collaboration Members</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {selectedCollab?.group?.members.map((member) => (
+              <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={member.user.profile_image_url || undefined} />
+                    <AvatarFallback className="bg-accent/10 text-accent">
+                      {getInitials(member.user.full_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{member.user.full_name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+                  </div>
+                </div>
+                {member.role !== 'owner' && selectedCollab?.status === 'open' && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => openKickMemberDialog(member.id, member.user.full_name)}
+                  >
+                    <UserMinus className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            {(!selectedCollab?.group?.members || selectedCollab.group.members.length === 0) && (
+              <p className="text-center text-muted-foreground py-4">No members yet</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Kick Member Confirmation Dialog */}
+      <AlertDialog open={kickMemberDialogOpen} onOpenChange={setKickMemberDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove member?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove {selectedMember?.name} from this collaboration? 
+              They will no longer have access to the group chat.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleKickMember} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove Member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       <Footer />
     </div>
