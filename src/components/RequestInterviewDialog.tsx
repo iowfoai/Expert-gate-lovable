@@ -9,6 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -24,7 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Plus, X, Loader2 } from "lucide-react";
+import { CalendarIcon, Plus, X, Loader2, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -45,6 +55,7 @@ interface RequestInterviewDialogProps {
   onOpenChange: (open: boolean) => void;
   expertName: string;
   expertId: string;
+  expertLanguages: string[];
 }
 
 const RequestInterviewDialog = ({
@@ -52,9 +63,12 @@ const RequestInterviewDialog = ({
   onOpenChange,
   expertName,
   expertId,
+  expertLanguages,
 }: RequestInterviewDialogProps) => {
   const [questions, setQuestions] = useState<string[]>([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingValues, setPendingValues] = useState<InterviewRequestFormValues | null>(null);
   const { toast } = useToast();
 
   const form = useForm<InterviewRequestFormValues>({
@@ -84,7 +98,7 @@ const RequestInterviewDialog = ({
     setQuestions(newQuestions);
   };
 
-  const onSubmit = async (values: InterviewRequestFormValues) => {
+  const handlePreSubmit = (values: InterviewRequestFormValues) => {
     const filteredQuestions = questions.filter(q => q.trim() !== "");
     
     if (filteredQuestions.length === 0) {
@@ -93,6 +107,14 @@ const RequestInterviewDialog = ({
       });
       return;
     }
+    
+    // Store values and show confirmation dialog
+    setPendingValues(values);
+    setShowConfirmDialog(true);
+  };
+
+  const onSubmit = async (values: InterviewRequestFormValues) => {
+    const filteredQuestions = questions.filter(q => q.trim() !== "");
 
     setIsSubmitting(true);
 
@@ -152,19 +174,33 @@ const RequestInterviewDialog = ({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">Request Interview</DialogTitle>
-          <DialogDescription>
-            Send an interview request to {expertName}
-          </DialogDescription>
-        </DialogHeader>
+  const languagesList = expertLanguages.join(', ');
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Research Topic */}
+  return (
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Request Interview</DialogTitle>
+            <DialogDescription>
+              Send an interview request to {expertName}
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Language Warning Banner */}
+          <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-destructive">Note: Submit the request in only {languagesList}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                This expert prefers to receive requests in these languages.
+              </p>
+            </div>
+          </div>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handlePreSubmit)} className="space-y-6">
+              {/* Research Topic */}
             <FormField
               control={form.control}
               name="researchTopic"
@@ -337,6 +373,32 @@ const RequestInterviewDialog = ({
         </Form>
       </DialogContent>
     </Dialog>
+
+    {/* Confirmation Dialog */}
+    <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirm Language</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you have submitted this request in the following language(s): <strong>{languagesList}</strong>?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Go Back</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              setShowConfirmDialog(false);
+              if (pendingValues) {
+                onSubmit(pendingValues);
+              }
+            }}
+          >
+            Yes, Submit Request
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   );
 };
 
