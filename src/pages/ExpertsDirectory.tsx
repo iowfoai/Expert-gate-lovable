@@ -25,6 +25,7 @@ interface Expert {
   profile_image_url: string | null;
   country: string | null;
   verification_status: string | null;
+  is_test_account: boolean;
 }
 
 interface ConnectionStatus {
@@ -60,7 +61,7 @@ const ExpertsDirectory = () => {
       // Fetch all verified experts except current user
       const { data: expertsData, error } = await supabase
         .from('profiles')
-        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, verification_status')
+        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, verification_status, is_test_account')
         .eq('user_type', 'expert')
         .eq('verification_status', 'verified')
         .neq('id', currentUserId);
@@ -293,6 +294,12 @@ const ExpertsDirectory = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredExperts.map((expert) => (
             <Card key={expert.id} className="hover:border-accent/50 transition-all hover:shadow-lg relative">
+              {/* Admin-only test account label */}
+              {isAdmin && expert.is_test_account && (
+                <div className="absolute top-2 left-2 z-10">
+                  <span className="text-xs italic text-muted-foreground bg-background/80 px-2 py-1 rounded">Visible only to admins</span>
+                </div>
+              )}
               {/* Admin delete button */}
               {isAdmin && (
                 <button

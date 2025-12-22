@@ -393,6 +393,7 @@ export type Database = {
           interviews_remaining: number | null
           is_available: boolean | null
           is_deleted: boolean
+          is_test_account: boolean
           monthly_interview_limit: number | null
           preferred_languages: string[] | null
           professional_website: string | null
@@ -425,6 +426,7 @@ export type Database = {
           interviews_remaining?: number | null
           is_available?: boolean | null
           is_deleted?: boolean
+          is_test_account?: boolean
           monthly_interview_limit?: number | null
           preferred_languages?: string[] | null
           professional_website?: string | null
@@ -457,6 +459,7 @@ export type Database = {
           interviews_remaining?: number | null
           is_available?: boolean | null
           is_deleted?: boolean
+          is_test_account?: boolean
           monthly_interview_limit?: number | null
           preferred_languages?: string[] | null
           professional_website?: string | null

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Star, MapPin, Calendar, Users, Globe } from "lucide-react";
 import { useUserTypeGuard } from "@/hooks/useUserTypeGuard";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 interface Expert {
   id: string;
@@ -25,10 +26,12 @@ interface Expert {
   is_available: boolean | null;
   verification_status: string | null;
   preferred_languages: string[] | null;
+  is_test_account: boolean;
 }
 
 const FindExperts = () => {
   const { isLoading: authLoading } = useUserTypeGuard(['researcher']);
+  const { isAdmin } = useAdminStatus();
   const [experts, setExperts] = useState<Expert[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,7 +45,7 @@ const FindExperts = () => {
     const fetchExperts = async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, is_available, verification_status, preferred_languages')
+        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, is_available, verification_status, preferred_languages, is_test_account')
         .eq('user_type', 'expert')
         .eq('verification_status', 'verified');
 
@@ -228,8 +231,13 @@ const FindExperts = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredExperts.map((expert) => (
-              <Card key={expert.id} className="hover:border-accent transition-colors">
-                <CardHeader>
+            <Card key={expert.id} className="hover:border-accent transition-colors">
+              {isAdmin && expert.is_test_account && (
+                <div className="px-4 pt-3">
+                  <p className="text-xs italic text-muted-foreground">Visible only to admins</p>
+                </div>
+              )}
+              <CardHeader>
                   <div className="flex items-start gap-4">
                     <Avatar className="w-16 h-16">
                       <AvatarImage src={expert.profile_image_url || undefined} />
