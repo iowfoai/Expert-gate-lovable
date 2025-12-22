@@ -96,7 +96,7 @@ const Index = () => {
             Bridging <span className="text-accent">Researchers</span> & <span className="text-accent">Experts</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            More than just interviews. Collaborate on research projects, build lasting connections, and exchange knowledge — all in one ethical, professional platform.
+            Book interviews with verified experts, collaborate on research projects, build lasting connections, and exchange knowledge — all in one ethical, professional platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {showGuestContent && (
