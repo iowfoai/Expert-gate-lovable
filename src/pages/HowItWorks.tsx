@@ -25,7 +25,7 @@ const HowItWorks = () => {
     },
     {
       icon: Search,
-      title: "2. Find Experts",
+      title: "2. Interview Experts",
       description: "Browse our directory of verified experts. Filter by field of expertise, experience, and availability."
     },
     {
@@ -64,7 +64,7 @@ const HowItWorks = () => {
     {
       icon: Clock,
       title: "3. Set Availability",
-      description: "Configure your monthly interview limits and availability status. Control when you're open to requests."
+      description: "Configure your availability status. Control when you're open to requests."
     },
     {
       icon: MessageSquare,
@@ -116,9 +116,9 @@ const HowItWorks = () => {
                 <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
                   <Clock className="w-8 h-8 text-accent" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Interview Limits</h3>
+                <h3 className="text-lg font-semibold mb-2">Flexible Scheduling</h3>
                 <p className="text-sm text-muted-foreground">
-                  Monthly limits protect experts from fatigue while ensuring availability
+                  Experts control their availability to ensure quality interactions
                 </p>
               </CardContent>
             </Card>

@@ -121,7 +121,7 @@ const About = () => {
               </li>
               <li className="flex gap-2">
                 <span className="text-accent">✓</span>
-                <span>Interview limits protect experts from being overwhelmed</span>
+                <span>Experts control their own availability and scheduling</span>
               </li>
               <li className="flex gap-2">
                 <span className="text-accent">✓</span>
