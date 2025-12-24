@@ -44,14 +44,18 @@ const TermsOfService = () => {
               <h3 className="text-xl font-medium mb-3">Researchers</h3>
               <p className="text-muted-foreground leading-relaxed">
                 Researchers may use the platform to find and connect with verified experts for interviews 
-                and collaboration. Researchers must conduct themselves professionally and respect expert 
-                availability and time.
+                and collaboration. Researchers can request interviews, create collaboration posts to find 
+                experts for their projects, and communicate with connected experts through our messaging 
+                system. Researchers must conduct themselves professionally and respect expert availability and time.
               </p>
               
               <h3 className="text-xl font-medium mb-3 mt-4">Experts</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Experts must provide accurate credentials and undergo verification. Experts are expected 
-                to respond to interview requests in a timely manner and maintain professional conduct.
+                Experts must provide accurate credentials and undergo verification before they can accept 
+                interview requests or apply to collaboration posts. Experts can connect with researchers, 
+                respond to interview requests, apply to collaboration posts, and participate in project 
+                groups. Experts are expected to respond to requests in a timely manner and maintain 
+                professional conduct.
               </p>
             </section>
 
@@ -81,24 +85,57 @@ const TermsOfService = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">6. Expert Availability</h2>
+              <h2 className="text-2xl font-semibold mb-4">6. Platform Features</h2>
+              <h3 className="text-xl font-medium mb-3">Interview Requests</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Researchers can request interviews with verified experts. Experts control their own 
+                availability and may accept or decline interview requests. Researchers must respect 
+                expert availability settings and not attempt to pressure experts for interviews.
+              </p>
+              
+              <h3 className="text-xl font-medium mb-3">Collaboration Posts</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Researchers can create collaboration posts to find experts for specific projects or 
+                research topics. Verified experts can apply to these posts. Post authors can review 
+                applications and accept or reject applicants to form project groups.
+              </p>
+              
+              <h3 className="text-xl font-medium mb-3">Project Groups</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                When collaboration applications are accepted, project groups are formed for team 
+                communication. Group members can communicate through the group messaging system. 
+                Group owners can manage membership.
+              </p>
+              
+              <h3 className="text-xl font-medium mb-3">Connections and Messaging</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Experts control their own availability and scheduling. Researchers must respect expert 
-                availability settings and not attempt to pressure experts for interviews.
+                Verified experts can send connection requests to researchers. Once a connection is 
+                accepted, both parties can communicate through private messaging. Messages are only 
+                visible to the connected parties and are not shared publicly.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">7. Content and Communications</h2>
+              <h2 className="text-2xl font-semibold mb-4">7. Free Platform Model</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                ExpertGate is provided free of charge to all users to maintain academic integrity and 
+                ensure equal access to expert knowledge. We do not charge fees for interviews, 
+                collaborations, or any platform features. This model ensures that financial barriers 
+                do not prevent meaningful research connections.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mb-4">8. Content and Communications</h2>
               <p className="text-muted-foreground leading-relaxed">
                 Users retain ownership of content they create. By using our platform, you grant us a license 
-                to display your profile information and facilitate communications. We may remove content 
-                that violates these terms.
+                to display your profile information and facilitate communications. Private messages between 
+                users are not shared publicly. We may remove content that violates these terms.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">8. Intellectual Property</h2>
+              <h2 className="text-2xl font-semibold mb-4">9. Intellectual Property</h2>
               <p className="text-muted-foreground leading-relaxed">
                 The ExpertGate platform, including its design, features, and content (excluding user-generated 
                 content), is owned by us and protected by intellectual property laws. You may not copy, 
@@ -107,16 +144,16 @@ const TermsOfService = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">9. Disclaimers</h2>
+              <h2 className="text-2xl font-semibold mb-4">10. Disclaimers</h2>
               <p className="text-muted-foreground leading-relaxed">
                 The platform is provided "as is" without warranties of any kind. We do not guarantee the 
                 accuracy of expert credentials beyond our verification process. We are not responsible for 
-                the content of interviews or the quality of expert opinions.
+                the content of interviews, the quality of expert opinions, or the outcomes of collaborations.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">10. Limitation of Liability</h2>
+              <h2 className="text-2xl font-semibold mb-4">11. Limitation of Liability</h2>
               <p className="text-muted-foreground leading-relaxed">
                 To the maximum extent permitted by law, ExpertGate shall not be liable for any indirect, 
                 incidental, special, consequential, or punitive damages arising from your use of the platform.
@@ -124,7 +161,7 @@ const TermsOfService = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">11. Termination</h2>
+              <h2 className="text-2xl font-semibold mb-4">12. Termination</h2>
               <p className="text-muted-foreground leading-relaxed">
                 We may terminate or suspend your account at any time for violations of these terms or for 
                 any other reason at our discretion. You may delete your account at any time through your 
@@ -133,7 +170,7 @@ const TermsOfService = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">12. Changes to Terms</h2>
+              <h2 className="text-2xl font-semibold mb-4">13. Changes to Terms</h2>
               <p className="text-muted-foreground leading-relaxed">
                 We reserve the right to modify these terms at any time. We will notify users of significant 
                 changes. Continued use of the platform after changes constitutes acceptance of the new terms.
@@ -141,7 +178,7 @@ const TermsOfService = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">13. Governing Law</h2>
+              <h2 className="text-2xl font-semibold mb-4">14. Governing Law</h2>
               <p className="text-muted-foreground leading-relaxed">
                 These terms shall be governed by and construed in accordance with applicable laws, without 
                 regard to conflict of law principles.
@@ -149,9 +186,11 @@ const TermsOfService = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">14. Contact</h2>
+              <h2 className="text-2xl font-semibold mb-4">15. Support and Contact</h2>
               <p className="text-muted-foreground leading-relaxed">
-                For questions about these Terms of Service, please contact us through our Support page.
+                For questions about these Terms of Service or to report issues, please contact us through 
+                our Support page. Our support system allows you to create tickets and communicate directly 
+                with our team.
               </p>
             </section>
           </div>
