@@ -267,7 +267,7 @@ const FindExperts = () => {
                         />
                       </Link>
                       {expert.education_level && (
-                        <p className="text-sm text-muted-foreground">{getEducationLabel(expert.education_level)}</p>
+                        <p className="text-sm font-medium text-accent">{getEducationLabel(expert.education_level)}</p>
                       )}
                       {expert.institution && (
                         <EditableProfileField

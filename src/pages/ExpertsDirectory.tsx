@@ -441,6 +441,9 @@ const ExpertsDirectory = () => {
                         className="font-semibold text-lg"
                       />
                     </Link>
+                    {expert.education_level && (
+                      <p className="text-sm font-medium text-accent">{getEducationLabel(expert.education_level)}</p>
+                    )}
                     {expert.institution && (
                       <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
                         <Building2 className="w-3 h-3 flex-shrink-0" />
