@@ -220,6 +220,10 @@ const EthicsPolicy = () => {
                 </li>
                 <li className="flex gap-2">
                   <span className="text-accent">✓</span>
+                  <span><EditableText contentKey="ethics.commitments.item7" defaultValue="We keep the platform free to maintain academic integrity and ensure equal access to expert knowledge" /></span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-accent">✓</span>
                   <span><EditableText contentKey="ethics.commitments.item6" defaultValue="We continuously review and improve our ethical standards" /></span>
                 </li>
               </ul>
