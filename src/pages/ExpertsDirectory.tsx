@@ -28,6 +28,7 @@ interface Expert {
   country: string | null;
   verification_status: string | null;
   is_test_account: boolean;
+  occupation: string[] | null;
 }
 
 interface ConnectionStatus {
@@ -63,7 +64,7 @@ const ExpertsDirectory = () => {
       // Fetch all verified experts except current user
       const { data: expertsData, error } = await supabase
         .from('profiles')
-        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, verification_status, is_test_account')
+        .select('id, full_name, bio, institution, field_of_expertise, education_level, years_of_experience, profile_image_url, country, verification_status, is_test_account, occupation')
         .eq('user_type', 'expert')
         .eq('verification_status', 'verified')
         .eq('is_test_account', false)
@@ -441,7 +442,9 @@ const ExpertsDirectory = () => {
                         className="font-semibold text-lg"
                       />
                     </Link>
-                    {expert.education_level && (
+                    {expert.occupation && expert.occupation.length > 0 ? (
+                      <p className="text-sm font-medium text-accent">{expert.occupation.join(', ')}</p>
+                    ) : expert.education_level && (
                       <p className="text-sm font-medium text-accent">{getEducationLabel(expert.education_level)}</p>
                     )}
                     {expert.institution && (

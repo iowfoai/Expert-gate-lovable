@@ -401,6 +401,7 @@ export type Database = {
           is_deleted: boolean
           is_test_account: boolean
           monthly_interview_limit: number | null
+          occupation: string[] | null
           preferred_languages: string[] | null
           professional_website: string | null
           profile_image_url: string | null
@@ -434,6 +435,7 @@ export type Database = {
           is_deleted?: boolean
           is_test_account?: boolean
           monthly_interview_limit?: number | null
+          occupation?: string[] | null
           preferred_languages?: string[] | null
           professional_website?: string | null
           profile_image_url?: string | null
@@ -467,6 +469,7 @@ export type Database = {
           is_deleted?: boolean
           is_test_account?: boolean
           monthly_interview_limit?: number | null
+          occupation?: string[] | null
           preferred_languages?: string[] | null
           professional_website?: string | null
           profile_image_url?: string | null
