@@ -183,6 +183,8 @@ export type Database = {
       }
       expert_connections: {
         Row: {
+          cleared_at_for_recipient: string | null
+          cleared_at_for_requester: string | null
           connection_type: string
           created_at: string
           has_unread_for_recipient: boolean | null
@@ -194,6 +196,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cleared_at_for_recipient?: string | null
+          cleared_at_for_requester?: string | null
           connection_type?: string
           created_at?: string
           has_unread_for_recipient?: boolean | null
@@ -205,6 +209,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cleared_at_for_recipient?: string | null
+          cleared_at_for_requester?: string | null
           connection_type?: string
           created_at?: string
           has_unread_for_recipient?: boolean | null

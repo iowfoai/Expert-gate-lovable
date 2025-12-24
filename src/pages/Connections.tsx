@@ -33,6 +33,8 @@ interface Connection {
   requester_id: string;
   recipient_id: string;
   connection_type: string;
+  cleared_at_for_requester?: string | null;
+  cleared_at_for_recipient?: string | null;
   other_user: {
     id: string;
     full_name: string;
@@ -293,12 +295,22 @@ const Connections = () => {
   useEffect(() => {
     if (!selectedConnection || !userId) return;
 
+    const isRequester = selectedConnection.requester_id === userId;
+    const clearedAt = isRequester
+      ? selectedConnection.cleared_at_for_requester
+      : selectedConnection.cleared_at_for_recipient;
+
     const fetchMessages = async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('messages')
         .select('*')
-        .eq('connection_id', selectedConnection.id)
-        .order('created_at', { ascending: true });
+        .eq('connection_id', selectedConnection.id);
+
+      if (clearedAt) {
+        query = query.gt('created_at', clearedAt);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: true });
 
       if (error) {
         console.error('Error fetching messages:', error);
@@ -326,15 +338,26 @@ const Connections = () => {
         table: 'messages',
         filter: `connection_id=eq.${selectedConnection.id}`
       }, (payload) => {
-        setMessages(prev => [...prev, payload.new as Message]);
+        const newMsg = payload.new as Message;
+
+        if (clearedAt && new Date(newMsg.created_at) <= new Date(clearedAt)) {
+          return;
+        }
+
+        setMessages(prev => [...prev, newMsg]);
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedConnection?.id, userId]);
+  }, [
+    selectedConnection?.id,
+    selectedConnection?.cleared_at_for_requester,
+    selectedConnection?.cleared_at_for_recipient,
+    userId,
+    markAsRead,
+  ]);
 
   // Fetch messages for selected project group (group chat)
   useEffect(() => {
