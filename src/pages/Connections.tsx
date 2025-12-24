@@ -488,6 +488,9 @@ const Connections = () => {
     if (error) {
       toast({ title: "Error", description: "Failed to mark as done", variant: "destructive" });
     } else {
+      // Immediately update local state
+      setConnections(prev => prev.filter(c => c.id !== connectionId));
+      setPendingRequests(prev => prev.filter(c => c.id !== connectionId));
       toast({ title: "Marked as Done", description: "Interview/Collaboration marked as complete" });
       setSelectedConnection(null);
     }
@@ -502,6 +505,9 @@ const Connections = () => {
     if (error) {
       toast({ title: "Error", description: "Failed to delete connection", variant: "destructive" });
     } else {
+      // Immediately update local state
+      setConnections(prev => prev.filter(c => c.id !== connectionId));
+      setPendingRequests(prev => prev.filter(c => c.id !== connectionId));
       toast({ title: "Deleted", description: "Connection removed" });
       if (selectedConnection?.id === connectionId) {
         setSelectedConnection(null);
