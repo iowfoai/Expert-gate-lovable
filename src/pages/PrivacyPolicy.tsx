@@ -65,7 +65,7 @@ const PrivacyPolicy = () => {
                 We do not sell your personal information. We may share your information:
               </p>
               <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-2">
-                <li>With other users as part of platform functionality (profiles, messages)</li>
+                <li>With other users as part of platform functionality (only public profile information such as your name, institution, and expertise areas is visible to other users)</li>
                 <li>With service providers who assist in operating our platform</li>
                 <li>When required by law or to protect our rights</li>
                 <li>In connection with a business transfer or merger</li>
@@ -128,8 +128,7 @@ const PrivacyPolicy = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">11. Contact Us</h2>
               <p className="text-muted-foreground leading-relaxed">
-                If you have questions about this Privacy Policy, please contact us through our Support page 
-                or email us at privacy@expertgate.com.
+                If you have questions about this Privacy Policy, please contact us through our Support page.
               </p>
             </section>
           </div>
