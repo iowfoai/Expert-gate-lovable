@@ -760,7 +760,7 @@ const Connections = () => {
     const pending = getFilteredPending();
 
     return (
-      <ScrollArea className="h-[calc(100vh-450px)] min-h-[300px]">
+      <ScrollArea className="h-[calc(100vh-350px)] sm:h-[calc(100vh-450px)] min-h-[250px] sm:min-h-[300px]">
         {/* Project group chats */}
         {activeTab === 'collaborations' && projectGroups.length > 0 && (
           <div className="px-4 pb-2">
@@ -989,35 +989,35 @@ const Connections = () => {
     <div className="min-h-screen flex flex-col bg-muted/30">
       <Navigation />
       
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <MessageSquare className="w-8 h-8 text-accent" />
+      <main className="flex-1 container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <MessageSquare className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />
             Chats
           </h1>
-          <p className="text-muted-foreground">Chat with your network</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Chat with your network</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Connections List with Tabs */}
-          <Card className="lg:col-span-1 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Connections List with Tabs - Hidden on mobile when chat is selected */}
+          <Card className={`lg:col-span-1 overflow-hidden ${(selectedConnection || selectedGroup) ? 'hidden lg:block' : ''}`}>
             <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setSelectedConnection(null); setSelectedGroup(null); setMessages([]); setGroupMessages([]); }} className="h-full">
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 px-2 sm:px-6">
                 <TabsList className="w-full grid grid-cols-3">
-                  <TabsTrigger value={userType === 'researcher' ? 'researchers' : 'experts'} className="gap-1 text-xs px-2">
+                  <TabsTrigger value={userType === 'researcher' ? 'researchers' : 'experts'} className="gap-1 text-[10px] sm:text-xs px-1 sm:px-2">
                     {userType === 'researcher' ? (
-                      <><FlaskConical className="w-3.5 h-3.5" />Peers</>
+                      <><FlaskConical className="w-3 h-3 sm:w-3.5 sm:h-3.5" /><span className="hidden xs:inline">Peers</span></>
                     ) : (
-                      <><GraduationCap className="w-3.5 h-3.5" />Peers</>
+                      <><GraduationCap className="w-3 h-3 sm:w-3.5 sm:h-3.5" /><span className="hidden xs:inline">Peers</span></>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="interviews" className="gap-1 text-xs px-2">
-                    <Calendar className="w-3.5 h-3.5" />
-                    Interviews
+                  <TabsTrigger value="interviews" className="gap-1 text-[10px] sm:text-xs px-1 sm:px-2">
+                    <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    <span className="hidden xs:inline">Interviews</span>
                   </TabsTrigger>
-                  <TabsTrigger value="collaborations" className="gap-1 text-xs px-2">
-                    <Handshake className="w-3.5 h-3.5" />
-                    Collabs
+                  <TabsTrigger value="collaborations" className="gap-1 text-[10px] sm:text-xs px-1 sm:px-2">
+                    <Handshake className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    <span className="hidden xs:inline">Collabs</span>
                   </TabsTrigger>
                 </TabsList>
               </CardHeader>
@@ -1035,8 +1035,8 @@ const Connections = () => {
             </Tabs>
           </Card>
 
-          {/* Chat Area */}
-          <Card className="lg:col-span-2 flex flex-col min-h-[500px]">
+          {/* Chat Area - Full width on mobile when selected */}
+          <Card className={`lg:col-span-2 flex flex-col min-h-[60vh] sm:min-h-[500px] ${!(selectedConnection || selectedGroup) ? 'hidden lg:flex' : ''}`}>
             {selectedConnection ? (
               <>
                 <CardHeader className="pb-3 border-b flex-shrink-0">

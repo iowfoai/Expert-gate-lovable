@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Network, LogOut, User, Settings, History, UserCircle, Users, Home, MessageSquare, Shield, FlaskConical } from "lucide-react";
+import { Network, LogOut, User, Settings, History, UserCircle, Users, Home, MessageSquare, Shield, FlaskConical, Menu, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
@@ -17,6 +17,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
 
 const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -98,13 +104,120 @@ const Navigation = () => {
   // Don't render navigation links until we know the user type
   const showNavLinks = !isLoading;
 
+  const mobileNavLinks = () => (
+    <>
+      {isExpert ? (
+        <>
+          <SheetClose asChild>
+            <Link to="/expert-home" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
+              <Home className="w-5 h-5" />
+              Home
+            </Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link to="/experts-directory" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
+              <Users className="w-5 h-5" />
+              Find Peers
+            </Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link to="/research-collab" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
+              <FlaskConical className="w-5 h-5" />
+              Research Collab
+            </Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link to="/connections" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors relative">
+              <MessageSquare className="w-5 h-5" />
+              Chats
+              {showChatIndicator && (
+                <span className="w-2 h-2 bg-destructive rounded-full" />
+              )}
+            </Link>
+          </SheetClose>
+        </>
+      ) : user ? (
+        <>
+          <SheetClose asChild>
+            <Link to="/find-experts" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
+              <Users className="w-5 h-5" />
+              Interview Experts
+            </Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link to="/research-collab" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
+              <FlaskConical className="w-5 h-5" />
+              Research Collab
+            </Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link to="/interviews" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
+              <History className="w-5 h-5" />
+              Interviews
+            </Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link to="/connections" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors relative">
+              <MessageSquare className="w-5 h-5" />
+              Chats
+              {showChatIndicator && (
+                <span className="w-2 h-2 bg-destructive rounded-full" />
+              )}
+            </Link>
+          </SheetClose>
+        </>
+      ) : (
+        <>
+          <SheetClose asChild>
+            <Link to="/find-experts" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
+              <Users className="w-5 h-5" />
+              Interview Experts
+            </Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link to="/how-it-works" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
+              <Home className="w-5 h-5" />
+              How It Works
+            </Link>
+          </SheetClose>
+        </>
+      )}
+      <SheetClose asChild>
+        <Link to="/about" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
+          About
+        </Link>
+      </SheetClose>
+      <SheetClose asChild>
+        <Link to="/support" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
+          Support
+        </Link>
+      </SheetClose>
+    </>
+  );
+
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border transition-all duration-300">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to={isExpert ? "/expert-home" : "/"} className="flex items-center gap-2 text-xl font-semibold hover:scale-105 transition-transform duration-300">
-          <Network className="w-6 h-6 text-accent" />
-          <span>ExpertGate</span>
-        </Link>
+      <div className="container mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {/* Mobile Menu */}
+          <Sheet>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="w-5 h-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[280px] sm:w-[320px]">
+              <div className="flex flex-col gap-1 mt-6">
+                {showNavLinks && mobileNavLinks()}
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <Link to={isExpert ? "/expert-home" : "/"} className="flex items-center gap-2 text-lg md:text-xl font-semibold hover:scale-105 transition-transform duration-300">
+            <Network className="w-5 h-5 md:w-6 md:h-6 text-accent" />
+            <span>ExpertGate</span>
+          </Link>
+        </div>
         
         <div className="hidden md:flex items-center gap-6">
           {showNavLinks && (
