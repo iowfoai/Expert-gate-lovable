@@ -124,13 +124,15 @@ const ExpertsDirectory = () => {
       return;
     }
 
-    const { error } = await supabase
+    const { data: connectionData, error } = await supabase
       .from('expert_connections')
       .insert({
         requester_id: currentUserId,
         recipient_id: expertId,
         status: 'pending'
-      });
+      })
+      .select()
+      .single();
 
     if (error) {
       toast({
@@ -141,6 +143,13 @@ const ExpertsDirectory = () => {
       return;
     }
 
+    // Send email notification
+    if (connectionData) {
+      supabase.functions.invoke('send-connection-notification', {
+        body: { type: 'connection_request', connectionId: connectionData.id }
+      }).catch(err => console.error('Error sending notification email:', err));
+    }
+
     setConnectionStatuses(prev => ({
       ...prev,
       [expertId]: 'pending_sent'
@@ -148,7 +157,8 @@ const ExpertsDirectory = () => {
 
     toast({
       title: "Request Sent",
-      description: "Connection request sent successfully!"
+      description: "Connection request sent successfully!",
+      duration: 10000,
     });
   };
 
@@ -161,6 +171,14 @@ const ExpertsDirectory = () => {
       });
       return;
     }
+
+    // First get the connection id
+    const { data: connectionData } = await supabase
+      .from('expert_connections')
+      .select('id')
+      .eq('requester_id', expertId)
+      .eq('recipient_id', currentUserId)
+      .single();
 
     const { error } = await supabase
       .from('expert_connections')
@@ -177,6 +195,13 @@ const ExpertsDirectory = () => {
       return;
     }
 
+    // Send email notification
+    if (connectionData) {
+      supabase.functions.invoke('send-connection-notification', {
+        body: { type: 'connection_accepted', connectionId: connectionData.id }
+      }).catch(err => console.error('Error sending notification email:', err));
+    }
+
     setConnectionStatuses(prev => ({
       ...prev,
       [expertId]: 'accepted'
@@ -188,7 +213,8 @@ const ExpertsDirectory = () => {
     
     toast({
       title: "Request Accepted",
-      description: `Request accepted, you may now chat with ${expertName} (Expert)`
+      description: `Request accepted, you may now chat with ${expertName} (Expert)`,
+      duration: 10000,
     });
   };
 

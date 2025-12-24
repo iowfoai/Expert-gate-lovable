@@ -309,14 +309,16 @@ const ResearchersDirectory = () => {
   const sendConnectionRequest = async (researcherId: string) => {
     if (!currentUserId) return;
 
-    const { error } = await supabase
+    const { data: connectionData, error } = await supabase
       .from('expert_connections')
       .insert({
         requester_id: currentUserId,
         recipient_id: researcherId,
         status: 'pending',
         connection_type: 'friend'
-      });
+      })
+      .select()
+      .single();
 
     if (error) {
       toast({
@@ -327,6 +329,13 @@ const ResearchersDirectory = () => {
       return;
     }
 
+    // Send email notification
+    if (connectionData) {
+      supabase.functions.invoke('send-connection-notification', {
+        body: { type: 'connection_request', connectionId: connectionData.id }
+      }).catch(err => console.error('Error sending notification email:', err));
+    }
+
     setConnectionStatuses(prev => ({
       ...prev,
       [researcherId]: 'pending_sent'
@@ -334,11 +343,20 @@ const ResearchersDirectory = () => {
 
     toast({
       title: "Request Sent",
-      description: "Connection request sent successfully!"
+      description: "Connection request sent successfully!",
+      duration: 10000,
     });
   };
 
   const acceptConnection = async (researcherId: string) => {
+    // First get the connection id
+    const { data: connectionData } = await supabase
+      .from('expert_connections')
+      .select('id')
+      .eq('requester_id', researcherId)
+      .eq('recipient_id', currentUserId)
+      .single();
+
     const { error } = await supabase
       .from('expert_connections')
       .update({ status: 'accepted' })
@@ -354,6 +372,13 @@ const ResearchersDirectory = () => {
       return;
     }
 
+    // Send email notification
+    if (connectionData) {
+      supabase.functions.invoke('send-connection-notification', {
+        body: { type: 'connection_accepted', connectionId: connectionData.id }
+      }).catch(err => console.error('Error sending notification email:', err));
+    }
+
     setConnectionStatuses(prev => ({
       ...prev,
       [researcherId]: 'accepted'
@@ -365,7 +390,8 @@ const ResearchersDirectory = () => {
     
     toast({
       title: "Request Accepted",
-      description: `Request accepted, you may now chat with ${researcherName} (Researcher)`
+      description: `Request accepted, you may now chat with ${researcherName} (Researcher)`,
+      duration: 10000,
     });
   };
 
