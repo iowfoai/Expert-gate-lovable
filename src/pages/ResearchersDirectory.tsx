@@ -254,6 +254,30 @@ const ResearchersDirectory = () => {
           table: 'expert_connections',
         },
         (payload) => {
+          // Handle DELETE events
+          if (payload.eventType === 'DELETE') {
+            const oldRecord = payload.old as {
+              requester_id: string;
+              recipient_id: string;
+              connection_type: string;
+            } | null;
+
+            if (!oldRecord) return;
+            if (oldRecord.connection_type !== 'friend') return;
+            if (oldRecord.requester_id !== currentUserId && oldRecord.recipient_id !== currentUserId) return;
+
+            const otherUserId =
+              oldRecord.requester_id === currentUserId ? oldRecord.recipient_id : oldRecord.requester_id;
+
+            setConnectionStatuses((prev) => {
+              const updated = { ...prev };
+              delete updated[otherUserId];
+              return updated;
+            });
+            return;
+          }
+
+          // Handle INSERT and UPDATE events
           const record = payload.new as {
             requester_id: string;
             recipient_id: string;
@@ -277,7 +301,7 @@ const ResearchersDirectory = () => {
                 ...prev,
                 [otherUserId]: record.requester_id === currentUserId ? 'pending_sent' : 'pending_received',
               };
-            } else if (record.status === 'rejected') {
+            } else if (record.status === 'rejected' || record.status === 'declined') {
               const updated = { ...prev };
               delete updated[otherUserId];
               return updated;

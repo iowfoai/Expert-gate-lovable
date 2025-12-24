@@ -99,6 +99,78 @@ const ExpertsDirectory = () => {
     fetchData();
   }, [authLoading, currentUserId]);
 
+  // Realtime subscription for connection status updates
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const channel = supabase
+      .channel('expert-connections-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'expert_connections',
+        },
+        (payload) => {
+          // Handle DELETE events
+          if (payload.eventType === 'DELETE') {
+            const oldRecord = payload.old as {
+              requester_id: string;
+              recipient_id: string;
+            } | null;
+
+            if (!oldRecord) return;
+            if (oldRecord.requester_id !== currentUserId && oldRecord.recipient_id !== currentUserId) return;
+
+            const otherUserId =
+              oldRecord.requester_id === currentUserId ? oldRecord.recipient_id : oldRecord.requester_id;
+
+            setConnectionStatuses((prev) => {
+              const updated = { ...prev };
+              delete updated[otherUserId];
+              return updated;
+            });
+            return;
+          }
+
+          // Handle INSERT and UPDATE events
+          const record = payload.new as {
+            requester_id: string;
+            recipient_id: string;
+            status: string;
+          } | null;
+
+          if (!record) return;
+          if (record.requester_id !== currentUserId && record.recipient_id !== currentUserId) return;
+
+          const otherUserId =
+            record.requester_id === currentUserId ? record.recipient_id : record.requester_id;
+
+          setConnectionStatuses((prev) => {
+            if (record.status === 'accepted') {
+              return { ...prev, [otherUserId]: 'accepted' };
+            } else if (record.status === 'pending') {
+              return {
+                ...prev,
+                [otherUserId]: record.requester_id === currentUserId ? 'pending_sent' : 'pending_received',
+              };
+            } else if (record.status === 'rejected' || record.status === 'declined') {
+              const updated = { ...prev };
+              delete updated[otherUserId];
+              return updated;
+            }
+            return prev;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId]);
+
   useEffect(() => {
     const filtered = experts.filter(expert => {
       const searchLower = searchQuery.toLowerCase();
