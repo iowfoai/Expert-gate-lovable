@@ -7,9 +7,15 @@ import Footer from "@/components/Footer";
 import { Search, Calendar, Shield, Users, MessageSquare, Handshake, ArrowLeftRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EditableText } from "@/components/EditableText";
+import { usePendingRequests } from "@/hooks/usePendingRequests";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const { pendingCount } = usePendingRequests();
+  const { unreadConnectionIds } = useUnreadMessages();
+  
+  const hasNotification = pendingCount > 0 || unreadConnectionIds.size > 0;
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -68,8 +74,19 @@ const Index = () => {
                 </Button>
               </Link>
             )}
+            {isLoggedIn && (
+              <Link to="/connections">
+                <Button size="lg" className="w-full sm:w-auto relative">
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Chats
+                  {hasNotification && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full" />
+                  )}
+                </Button>
+              </Link>
+            )}
             <Link to="/find-experts">
-              <Button size="lg" variant={isLoggedIn ? "default" : "outline"} className="w-full sm:w-auto">
+              <Button size="lg" variant={isLoggedIn ? "outline" : "outline"} className="w-full sm:w-auto">
                 <EditableText contentKey="index.hero.cta.interview" defaultValue="Interview Experts" />
               </Button>
             </Link>
