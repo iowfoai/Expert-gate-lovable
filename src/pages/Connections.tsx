@@ -460,7 +460,8 @@ const Connections = () => {
   };
 
   const handleAcceptCollaboration = async (collabRequest: CollaborationRequest) => {
-    // Update collaboration request status
+    // First update collaboration request status to 'accepted'
+    // This must happen BEFORE creating the connection due to RLS policy
     const { error: collabError } = await supabase
       .from('collaboration_requests')
       .update({ status: 'accepted' })
@@ -471,22 +472,51 @@ const Connections = () => {
       return;
     }
 
-    // Create a connection for the collaboration
-    const { error: connError } = await supabase
+    // Now create a connection for the collaboration
+    const { data: newConnection, error: connError } = await supabase
       .from('expert_connections')
       .insert({
         requester_id: collabRequest.expert_id,
         recipient_id: collabRequest.researcher_id,
         status: 'accepted',
         connection_type: 'collaboration'
-      });
+      })
+      .select()
+      .single();
 
     if (connError) {
       console.error('Error creating connection:', connError);
+      toast({ title: "Error", description: "Failed to create chat connection", variant: "destructive" });
+      return;
+    }
+
+    // Remove from collaboration requests list
+    setCollaborationRequests(prev => prev.filter(c => c.id !== collabRequest.id));
+
+    // Add to connections list with enriched data
+    if (newConnection && collabRequest.expert) {
+      const enrichedConnection: Connection = {
+        ...newConnection,
+        other_user: {
+          id: collabRequest.expert.id,
+          full_name: collabRequest.expert.full_name,
+          institution: collabRequest.expert.institution || '',
+          field_of_expertise: [],
+          profile_image_url: collabRequest.expert.profile_image_url,
+          user_type: 'expert'
+        },
+        is_requester: false,
+        has_unread: false
+      };
+      setConnections(prev => [enrichedConnection, ...prev]);
     }
 
     const expertName = collabRequest.expert?.full_name || "Expert";
-    toast({ title: "Request Accepted", description: `Request accepted, you may now chat with ${expertName} (Expert)` });
+    toast({ 
+      title: "Request Accepted", 
+      description: `Request accepted, you may now chat with ${expertName} (Expert)`,
+      duration: 5000
+    });
   };
 
   const handleDeclineCollaboration = async (collabId: string) => {
