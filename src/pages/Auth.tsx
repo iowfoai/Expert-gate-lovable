@@ -14,13 +14,17 @@ import InstitutionCombobox from "@/components/InstitutionCombobox";
 import LanguageMultiSelect from "@/components/LanguageMultiSelect";
 import { Badge } from "@/components/ui/badge";
 
-const EXPERTISE_LEVELS = [
+const EDUCATION_LEVELS = [
   { value: "bachelors", label: "Bachelor's Degree" },
   { value: "masters", label: "Master's Degree" },
   { value: "phd", label: "PhD" },
   { value: "postdoc", label: "Postdoctoral" },
+];
+
+const OCCUPATION_OPTIONS = [
   { value: "professor", label: "Professor" },
   { value: "industry_professional", label: "Industry Professional" },
+  { value: "other", label: "Other" },
 ];
 
 const Auth = () => {
@@ -41,6 +45,8 @@ const Auth = () => {
 
   // Expert-specific fields
   const [educationLevels, setEducationLevels] = useState<string[]>([]);
+  const [occupations, setOccupations] = useState<string[]>([]);
+  const [customOccupation, setCustomOccupation] = useState("");
   const [institution, setInstitution] = useState("");
   const [organization, setOrganization] = useState("");
   const [fieldOfExpertise, setFieldOfExpertise] = useState("");
@@ -288,12 +294,12 @@ const Auth = () => {
                         
                         <div className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="education">Expertise Level *</Label>
+                            <Label htmlFor="education">Maximum Education Level *</Label>
                             {educationLevels.length > 0 && (
                               <div className="flex flex-wrap gap-2 mb-2">
                                 {educationLevels.map((level) => (
                                   <Badge key={level} variant="secondary" className="flex items-center gap-1">
-                                    {EXPERTISE_LEVELS.find(l => l.value === level)?.label || level}
+                                    {EDUCATION_LEVELS.find(l => l.value === level)?.label || level}
                                     <X
                                       className="h-3 w-3 cursor-pointer hover:text-destructive"
                                       onClick={() => setEducationLevels(educationLevels.filter(l => l !== level))}
@@ -311,10 +317,10 @@ const Auth = () => {
                               }}
                             >
                               <SelectTrigger>
-                                <SelectValue placeholder="Add expertise level..." />
+                                <SelectValue placeholder="Add education level..." />
                               </SelectTrigger>
                               <SelectContent>
-                                {EXPERTISE_LEVELS.filter(l => !educationLevels.includes(l.value)).map((level) => (
+                                {EDUCATION_LEVELS.filter(l => !educationLevels.includes(l.value)).map((level) => (
                                   <SelectItem key={level.value} value={level.value}>
                                     {level.label}
                                   </SelectItem>
@@ -322,7 +328,71 @@ const Auth = () => {
                               </SelectContent>
                             </Select>
                             <p className="text-xs text-muted-foreground">
-                              Select one or more expertise levels
+                              Select one or more education levels
+                            </p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="occupation">Occupation *</Label>
+                            {occupations.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {occupations.map((occ) => (
+                                  <Badge key={occ} variant="secondary" className="flex items-center gap-1">
+                                    {OCCUPATION_OPTIONS.find(o => o.value === occ)?.label || occ}
+                                    <X
+                                      className="h-3 w-3 cursor-pointer hover:text-destructive"
+                                      onClick={() => setOccupations(occupations.filter(o => o !== occ))}
+                                    />
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                            <Select 
+                              value="" 
+                              onValueChange={(value) => {
+                                if (value === "other") {
+                                  // Show custom input instead
+                                  return;
+                                }
+                                if (!occupations.includes(value)) {
+                                  setOccupations([...occupations, value]);
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Add occupation..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {OCCUPATION_OPTIONS.filter(o => o.value !== "other" && !occupations.includes(o.value)).map((occ) => (
+                                  <SelectItem key={occ.value} value={occ.value}>
+                                    {occ.label}
+                                  </SelectItem>
+                                ))}
+                                <SelectItem value="other">Other (custom)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Enter custom occupation..."
+                                value={customOccupation}
+                                onChange={(e) => setCustomOccupation(e.target.value)}
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  if (customOccupation.trim() && !occupations.includes(customOccupation.trim())) {
+                                    setOccupations([...occupations, customOccupation.trim()]);
+                                    setCustomOccupation("");
+                                  }
+                                }}
+                              >
+                                Add
+                              </Button>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Select from options or add a custom occupation
                             </p>
                           </div>
                           
