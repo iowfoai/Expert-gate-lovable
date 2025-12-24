@@ -35,7 +35,9 @@ const PrivacyPolicy = () => {
                 <li>Professional credentials and institutional affiliations</li>
                 <li>Profile information including bio, expertise areas, and publications</li>
                 <li>Profile photos (optional)</li>
-                <li>Communication content through our messaging system</li>
+                <li>Communication content through our messaging system (connection messages and project group messages)</li>
+                <li>Collaboration posts and applications you create</li>
+                <li>Interview requests and scheduling information</li>
               </ul>
               
               <h3 className="text-xl font-medium mb-3 mt-4">Usage Information</h3>
@@ -43,6 +45,7 @@ const PrivacyPolicy = () => {
                 <li>Log data (IP address, browser type, pages visited)</li>
                 <li>Device information</li>
                 <li>Interview scheduling and participation data</li>
+                <li>Project group membership and activity</li>
               </ul>
             </section>
 
@@ -52,7 +55,8 @@ const PrivacyPolicy = () => {
                 <li>To provide and maintain our platform</li>
                 <li>To facilitate connections between researchers and experts</li>
                 <li>To verify expert credentials</li>
-                <li>To send notifications about interviews and messages</li>
+                <li>To send notifications about interviews, messages, and collaboration opportunities</li>
+                <li>To enable project group communication and collaboration</li>
                 <li>To improve our services and user experience</li>
                 <li>To respond to support inquiries</li>
                 <li>To enforce our terms and policies</li>

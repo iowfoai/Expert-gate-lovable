@@ -121,6 +121,8 @@ const EthicsPolicy = () => {
                   <li>• <EditableText contentKey="ethics.researchers.expected.item4" defaultValue="Properly cite and attribute expert contributions" /></li>
                   <li>• <EditableText contentKey="ethics.researchers.expected.item5" defaultValue="Maintain confidentiality when requested" /></li>
                   <li>• <EditableText contentKey="ethics.researchers.expected.item6" defaultValue="Provide accurate information about your research and institution" /></li>
+                  <li>• <EditableText contentKey="ethics.researchers.expected.item7" defaultValue="Write clear and accurate collaboration post descriptions" /></li>
+                  <li>• <EditableText contentKey="ethics.researchers.expected.item8" defaultValue="Treat all project group members fairly and professionally" /></li>
                 </ul>
                 
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -149,11 +151,12 @@ const EthicsPolicy = () => {
                 </h3>
                 <ul className="space-y-2 text-muted-foreground mb-6">
                   <li>• <EditableText contentKey="ethics.experts.expected.item1" defaultValue="Provide accurate credentials and expertise information" /></li>
-                  <li>• <EditableText contentKey="ethics.experts.expected.item2" defaultValue="Respond to interview requests in a timely manner" /></li>
+                  <li>• <EditableText contentKey="ethics.experts.expected.item2" defaultValue="Respond to interview requests and collaboration applications in a timely manner" /></li>
                   <li>• <EditableText contentKey="ethics.experts.expected.item3" defaultValue="Disclose any conflicts of interest" /></li>
                   <li>• <EditableText contentKey="ethics.experts.expected.item4" defaultValue="Maintain professional conduct during all interactions" /></li>
                   <li>• <EditableText contentKey="ethics.experts.expected.item5" defaultValue="Respect researcher confidentiality when appropriate" /></li>
                   <li>• <EditableText contentKey="ethics.experts.expected.item6" defaultValue="Provide honest and unbiased expertise" /></li>
+                  <li>• <EditableText contentKey="ethics.experts.expected.item7" defaultValue="Contribute constructively to project groups you join" /></li>
                 </ul>
                 
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
