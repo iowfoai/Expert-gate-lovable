@@ -6,12 +6,22 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Network, Upload } from "lucide-react";
+import { Network, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { countries } from "@/lib/countries";
 import InstitutionCombobox from "@/components/InstitutionCombobox";
 import LanguageMultiSelect from "@/components/LanguageMultiSelect";
+import { Badge } from "@/components/ui/badge";
+
+const EXPERTISE_LEVELS = [
+  { value: "bachelors", label: "Bachelor's Degree" },
+  { value: "masters", label: "Master's Degree" },
+  { value: "phd", label: "PhD" },
+  { value: "postdoc", label: "Postdoctoral" },
+  { value: "professor", label: "Professor" },
+  { value: "industry_professional", label: "Industry Professional" },
+];
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -30,7 +40,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
 
   // Expert-specific fields
-  const [educationLevel, setEducationLevel] = useState("");
+  const [educationLevels, setEducationLevels] = useState<string[]>([]);
   const [institution, setInstitution] = useState("");
   const [organization, setOrganization] = useState("");
   const [fieldOfExpertise, setFieldOfExpertise] = useState("");
@@ -121,7 +131,7 @@ const Auth = () => {
 
     // Validation for experts
     if (userType === "expert") {
-      if (!educationLevel || !institution || !fieldOfExpertise || !yearsOfExperience) {
+      if (educationLevels.length === 0 || !institution || !fieldOfExpertise || !yearsOfExperience) {
         toast({
           title: "Error",
           description: "Please fill in all required expert fields",
@@ -149,7 +159,7 @@ const Auth = () => {
         preferred_languages: preferredLanguages.length > 0 ? preferredLanguages : ['English']
       };
       if (userType === "expert") {
-        metadata.education_level = educationLevel;
+        metadata.education_level = educationLevels[0]; // Store first as primary for DB compatibility
         metadata.institution = institution;
         metadata.field_of_expertise = fieldOfExpertise.split(',').map(f => f.trim());
         metadata.years_of_experience = parseInt(yearsOfExperience);
@@ -278,20 +288,42 @@ const Auth = () => {
                         
                         <div className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="education">Education Level *</Label>
-                            <Select value={educationLevel} onValueChange={setEducationLevel}>
+                            <Label htmlFor="education">Expertise Level *</Label>
+                            {educationLevels.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {educationLevels.map((level) => (
+                                  <Badge key={level} variant="secondary" className="flex items-center gap-1">
+                                    {EXPERTISE_LEVELS.find(l => l.value === level)?.label || level}
+                                    <X
+                                      className="h-3 w-3 cursor-pointer hover:text-destructive"
+                                      onClick={() => setEducationLevels(educationLevels.filter(l => l !== level))}
+                                    />
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                            <Select 
+                              value="" 
+                              onValueChange={(value) => {
+                                if (!educationLevels.includes(value)) {
+                                  setEducationLevels([...educationLevels, value]);
+                                }
+                              }}
+                            >
                               <SelectTrigger>
-                                <SelectValue placeholder="Select education level" />
+                                <SelectValue placeholder="Add expertise level..." />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
-                                <SelectItem value="masters">Master's Degree</SelectItem>
-                                <SelectItem value="phd">PhD</SelectItem>
-                                <SelectItem value="postdoc">Postdoctoral</SelectItem>
-                                <SelectItem value="professor">Professor</SelectItem>
-                                <SelectItem value="industry_professional">Industry Professional</SelectItem>
+                                {EXPERTISE_LEVELS.filter(l => !educationLevels.includes(l.value)).map((level) => (
+                                  <SelectItem key={level.value} value={level.value}>
+                                    {level.label}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
+                            <p className="text-xs text-muted-foreground">
+                              Select one or more expertise levels
+                            </p>
                           </div>
                           
                           <div className="space-y-2">
