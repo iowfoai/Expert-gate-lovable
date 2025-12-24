@@ -135,46 +135,47 @@ const FindExperts = () => {
     <div className="min-h-screen flex flex-col">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-12">
-        <div className="mb-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-12">
+        <div className="mb-6 sm:mb-8">
           <EditableText 
             contentKey="find_experts_title" 
             defaultValue="Find Your Expert" 
             as="h1" 
-            className="text-4xl font-bold mb-4" 
+            className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4" 
           />
           <EditableText 
             contentKey="find_experts_subtitle" 
             defaultValue="Search through our verified experts and connect for your research needs" 
             as="p" 
-            className="text-muted-foreground" 
+            className="text-sm sm:text-base text-muted-foreground" 
           />
         </div>
         
         {/* Search Bar */}
-        <div className="mb-8 flex gap-4">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row gap-2 sm:gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             <Input 
               placeholder="Search by name, field, or institution..." 
-              className="pl-10"
+              className="pl-9 sm:pl-10 text-sm sm:text-base"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button onClick={() => setSearchQuery("")}>
+          <Button onClick={() => setSearchQuery("")} className="w-full sm:w-auto">
             {searchQuery ? "Clear" : "Search"}
           </Button>
         </div>
         
         {/* Filters */}
-        <div className="mb-8 space-y-4">
+        <div className="mb-6 sm:mb-8 space-y-4">
           <div>
-            <h3 className="text-sm font-medium mb-3">General Filters</h3>
-            <div className="flex gap-3 flex-wrap">
+            <h3 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3">General Filters</h3>
+            <div className="flex gap-2 sm:gap-3 flex-wrap">
               <Button 
                 variant={selectedFilter === "all" ? "default" : "outline"} 
                 size="sm"
+                className="text-xs sm:text-sm"
                 onClick={() => setSelectedFilter("all")}
               >
                 All Experts
@@ -182,6 +183,7 @@ const FindExperts = () => {
               <Button 
                 variant={selectedFilter === "available" ? "default" : "outline"} 
                 size="sm"
+                className="text-xs sm:text-sm"
                 onClick={() => setSelectedFilter("available")}
               >
                 Available Now

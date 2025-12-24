@@ -352,56 +352,56 @@ const ExpertsDirectory = () => {
     <div className="min-h-screen flex flex-col">
       <Navigation />
       
-      <main className="flex-1 container mx-auto px-4 py-12">
+      <main className="flex-1 container mx-auto px-3 sm:px-4 py-6 sm:py-12">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/10 mb-4">
-            <Users className="w-8 h-8 text-accent" />
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-accent/10 mb-3 sm:mb-4">
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />
           </div>
           <EditableText 
             contentKey="experts_directory_title" 
             defaultValue="Expert Directory" 
             as="h1" 
-            className="text-3xl md:text-4xl font-bold mb-4" 
+            className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4" 
           />
           <EditableText 
             contentKey="experts_directory_subtitle" 
             defaultValue="Connect with fellow experts, share knowledge, and expand your professional network" 
             as="p" 
-            className="text-muted-foreground max-w-2xl mx-auto" 
+            className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto px-2" 
           />
         </div>
 
         {/* Verification Warning */}
         {!currentUserVerified && (
-          <Alert variant="destructive" className="max-w-2xl mx-auto mb-8">
+          <Alert variant="destructive" className="max-w-2xl mx-auto mb-6 sm:mb-8">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
+            <AlertDescription className="text-sm">
               Your account is pending verification. You can browse the directory but cannot connect with other experts until your account is verified.
             </AlertDescription>
           </Alert>
         )}
 
         {/* Search */}
-        <div className="max-w-xl mx-auto mb-10">
+        <div className="max-w-xl mx-auto mb-6 sm:mb-10">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             <Input
-              placeholder="Search by name, institution, expertise, or country..."
+              placeholder="Search by name, institution, expertise..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-9 sm:pl-10 text-sm sm:text-base"
             />
           </div>
         </div>
 
         {/* Results Count */}
-        <p className="text-muted-foreground mb-6">
+        <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
           {filteredExperts.length} expert{filteredExperts.length !== 1 ? 's' : ''} found
         </p>
 
         {/* Experts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredExperts.map((expert) => (
             <Card key={expert.id} className="hover:border-accent/50 transition-all hover:shadow-lg relative">
               {/* Admin-only test account label */}

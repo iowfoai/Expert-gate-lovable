@@ -49,11 +49,11 @@ const Footer = () => {
   const isExpert = userType === 'expert';
 
   return (
-    <footer className="bg-muted border-t border-border mt-20">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="bg-muted border-t border-border mt-12 sm:mt-20">
+      <div className="container mx-auto px-4 py-8 sm:py-12">
         {/* Beta Notice - Top */}
-        <div className="mb-8 pb-8 border-b border-border text-center">
-          <p className="text-xs italic text-muted-foreground/70 max-w-2xl mx-auto">
+        <div className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-border text-center">
+          <p className="text-xs italic text-muted-foreground/70 max-w-2xl mx-auto px-2">
             <EditableText 
               contentKey="footer.beta.notice" 
               defaultValue="This product is still in beta. Please submit any feedback if you have suggestions or encounter any problems. You may also create a support ticket if you have issues with your account."
@@ -62,7 +62,7 @@ const Footer = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           <div>
             <Link to="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
               <Network className="w-5 h-5 text-accent" />

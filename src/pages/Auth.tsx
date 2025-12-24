@@ -212,22 +212,22 @@ const Auth = () => {
       setLoading(false);
     }
   };
-  return <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+  return <div className="min-h-screen flex items-center justify-center bg-muted/30 px-3 py-6 sm:p-4">
       <div className="w-full max-w-2xl">
-        <Link to="/" className="flex items-center justify-center gap-2 text-xl font-semibold mb-8">
-          <Network className="w-6 h-6 text-accent" />
+        <Link to="/" className="flex items-center justify-center gap-2 text-lg sm:text-xl font-semibold mb-6 sm:mb-8">
+          <Network className="w-5 h-5 sm:w-6 sm:h-6 text-accent" />
           <span>ExpertGate</span>
         </Link>
         
         <Card>
-          <CardHeader>
-            <CardTitle>{mode === "signup" ? "Create Account" : "Welcome Back"}</CardTitle>
-            <CardDescription>
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-xl sm:text-2xl">{mode === "signup" ? "Create Account" : "Welcome Back"}</CardTitle>
+            <CardDescription className="text-sm">
               {mode === "signup" ? "Join ExpertGate to connect with experts or share your expertise" : "Sign in to your ExpertGate account"}
             </CardDescription>
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             <form onSubmit={mode === "signup" ? handleSignUp : handleSignIn} className="space-y-4">
               {mode === "signup" && <div className="space-y-2">
                   <Label>I am a...</Label>
