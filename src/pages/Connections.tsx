@@ -409,7 +409,16 @@ const Connections = () => {
     if (error) {
       toast({ title: "Error", description: "Failed to accept connection request", variant: "destructive" });
     } else {
-      toast({ title: "Request Accepted", description: `Request accepted, you may now chat with ${otherUserName} (${otherUserType})` });
+      // Send email notification to the requester
+      supabase.functions.invoke('send-connection-notification', {
+        body: { type: 'connection_accepted', connectionId }
+      }).catch(err => console.error('Error sending notification email:', err));
+
+      toast({ 
+        title: "Request Accepted", 
+        description: `Request accepted, you may now chat with ${otherUserName} (${otherUserType})`,
+        duration: 10000,
+      });
     }
   };
 

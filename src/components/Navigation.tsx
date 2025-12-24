@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { usePendingRequests } from "@/hooks/usePendingRequests";
+import { useConnectionNotifications } from "@/hooks/useConnectionNotifications";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import {
   DropdownMenu,
@@ -23,8 +25,14 @@ const Navigation = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { isAdmin } = useAdminStatus();
   const { hasUnread } = useUnreadMessages();
+  const { hasPendingRequests } = usePendingRequests();
+  // This hook handles real-time notifications for accepted requests
+  useConnectionNotifications();
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Combined indicator: show dot if there are unread messages OR pending requests
+  const showChatIndicator = hasUnread || hasPendingRequests;
 
   useEffect(() => {
     // Get initial session
@@ -114,7 +122,7 @@ const Navigation = () => {
                   </Link>
                   <Link to="/connections" className={`${linkClass} relative`}>
                     Chats
-                    {hasUnread && (
+                    {showChatIndicator && (
                       <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
                     )}
                   </Link>
@@ -132,7 +140,7 @@ const Navigation = () => {
                   </Link>
                   <Link to="/connections" className={`${linkClass} relative`}>
                     Chats
-                    {hasUnread && (
+                    {showChatIndicator && (
                       <span className="absolute -top-1 -right-2 w-2 h-2 bg-destructive rounded-full" />
                     )}
                   </Link>
@@ -188,7 +196,7 @@ const Navigation = () => {
                     <DropdownMenuItem onClick={() => navigate("/connections")} className="relative">
                       <MessageSquare className="w-4 h-4 mr-2" />
                       Chats
-                      {hasUnread && (
+                      {showChatIndicator && (
                         <span className="absolute right-2 w-2 h-2 bg-destructive rounded-full" />
                       )}
                     </DropdownMenuItem>
@@ -204,7 +212,7 @@ const Navigation = () => {
                     <DropdownMenuItem onClick={() => navigate("/connections")} className="relative">
                       <MessageSquare className="w-4 h-4 mr-2" />
                       Chats
-                      {hasUnread && (
+                      {showChatIndicator && (
                         <span className="absolute right-2 w-2 h-2 bg-destructive rounded-full" />
                       )}
                     </DropdownMenuItem>
