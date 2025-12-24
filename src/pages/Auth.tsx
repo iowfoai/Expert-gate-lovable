@@ -172,6 +172,7 @@ const Auth = () => {
         metadata.publications = publications || null;
         metadata.professional_website = professionalWebsite || null;
         metadata.specific_experience = specificExperience;
+        metadata.occupation = occupations.length > 0 ? occupations : null;
       } else {
         metadata.research_institution = researchInstitution || null;
         metadata.research_field = researchField ? researchField.split(',').map(f => f.trim()) : null;
