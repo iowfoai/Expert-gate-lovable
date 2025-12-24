@@ -21,6 +21,7 @@ import {
   Handshake,
   Circle,
   Calendar,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -502,40 +503,94 @@ const Connections = () => {
   };
 
   const handleMarkAsDone = async (connectionId: string) => {
-    // Delete the connection to remove chat
-    const { error } = await supabase
+    // Delete the connection and verify it was actually deleted
+    const { data, error } = await supabase
       .from('expert_connections')
       .delete()
-      .eq('id', connectionId);
+      .eq('id', connectionId)
+      .select();
 
     if (error) {
       toast({ title: "Error", description: "Failed to mark as done", variant: "destructive" });
-    } else {
-      // Immediately update local state
-      setConnections(prev => prev.filter(c => c.id !== connectionId));
-      setPendingRequests(prev => prev.filter(c => c.id !== connectionId));
-      toast({ title: "Marked as Done", description: "Interview/Collaboration marked as complete" });
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      toast({ title: "Error", description: "Could not remove connection. Please try again.", variant: "destructive" });
+      return;
+    }
+
+    // Immediately update local state
+    setConnections(prev => prev.filter(c => c.id !== connectionId));
+    setPendingRequests(prev => prev.filter(c => c.id !== connectionId));
+    toast({ title: "Marked as Done", description: "Interview/Collaboration marked as complete" });
+    setSelectedConnection(null);
+  };
+
+  const handleDeleteFriendConnection = async (connectionId: string) => {
+    // Delete the connection and verify it was actually deleted
+    const { data, error } = await supabase
+      .from('expert_connections')
+      .delete()
+      .eq('id', connectionId)
+      .select();
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to delete connection", variant: "destructive" });
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      toast({ title: "Error", description: "Could not remove connection. Please try again.", variant: "destructive" });
+      return;
+    }
+
+    // Immediately update local state
+    setConnections(prev => prev.filter(c => c.id !== connectionId));
+    setPendingRequests(prev => prev.filter(c => c.id !== connectionId));
+    toast({ title: "Deleted", description: "Connection removed" });
+    if (selectedConnection?.id === connectionId) {
       setSelectedConnection(null);
     }
   };
 
-  const handleDeleteFriendConnection = async (connectionId: string) => {
+  const handleClearChat = async () => {
+    if (!selectedConnection || !userId) return;
+
+    const isRequester = selectedConnection.requester_id === userId;
+    const updateField = isRequester ? 'cleared_at_for_requester' : 'cleared_at_for_recipient';
+    const now = new Date().toISOString();
+
     const { error } = await supabase
       .from('expert_connections')
-      .delete()
-      .eq('id', connectionId);
+      .update({ [updateField]: now })
+      .eq('id', selectedConnection.id);
 
     if (error) {
-      toast({ title: "Error", description: "Failed to delete connection", variant: "destructive" });
-    } else {
-      // Immediately update local state
-      setConnections(prev => prev.filter(c => c.id !== connectionId));
-      setPendingRequests(prev => prev.filter(c => c.id !== connectionId));
-      toast({ title: "Deleted", description: "Connection removed" });
-      if (selectedConnection?.id === connectionId) {
-        setSelectedConnection(null);
-      }
+      toast({ title: "Error", description: "Failed to clear chat", variant: "destructive" });
+      return;
     }
+
+    // Update local state
+    setSelectedConnection(prev => prev ? {
+      ...prev,
+      cleared_at_for_requester: isRequester ? now : prev.cleared_at_for_requester,
+      cleared_at_for_recipient: !isRequester ? now : prev.cleared_at_for_recipient,
+    } : null);
+
+    setConnections(prev => prev.map(c =>
+      c.id === selectedConnection.id
+        ? {
+            ...c,
+            cleared_at_for_requester: isRequester ? now : c.cleared_at_for_requester,
+            cleared_at_for_recipient: !isRequester ? now : c.cleared_at_for_recipient,
+          }
+        : c
+    ));
+
+    // Clear messages from UI
+    setMessages([]);
+    toast({ title: "Chat Cleared", description: "Chat history has been cleared for you" });
   };
 
   const handleSendGroupMessage = async (e: React.FormEvent) => {
@@ -988,19 +1043,33 @@ const Connections = () => {
                       </div>
                     </div>
 
-                    {/* End Interview/Collaboration button - only for cross-type connections */}
-                    {!isFriendConnection(selectedConnection) &&
-                      selectedConnection.other_user.user_type !== userType && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleMarkAsDone(selectedConnection.id)}
-                          className="gap-2 text-destructive border-destructive/50 hover:bg-destructive/10"
-                        >
-                          <X className="w-4 h-4" />
-                          {selectedConnection.connection_type === 'interview' ? 'End Interview' : 'End Collaboration'}
-                        </Button>
-                      )}
+                    <div className="flex items-center gap-2">
+                      {/* Clear Chat button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleClearChat}
+                        className="gap-2 text-muted-foreground hover:text-foreground"
+                        title="Clear chat history"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span className="hidden sm:inline">Clear</span>
+                      </Button>
+
+                      {/* End Interview/Collaboration button - only for cross-type connections */}
+                      {!isFriendConnection(selectedConnection) &&
+                        selectedConnection.other_user.user_type !== userType && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleMarkAsDone(selectedConnection.id)}
+                            className="gap-2 text-destructive border-destructive/50 hover:bg-destructive/10"
+                          >
+                            <X className="w-4 h-4" />
+                            {selectedConnection.connection_type === 'interview' ? 'End Interview' : 'End Collaboration'}
+                          </Button>
+                        )}
+                    </div>
                   </div>
                 </CardHeader>
 
