@@ -15,6 +15,7 @@ import { Search, UserPlus, Check, Clock, Users, GraduationCap, Building2, AlertC
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EditableText } from "@/components/EditableText";
 import { EditableProfileField } from "@/components/EditableProfileField";
+import { formatOccupations, getEducationLabel } from "@/lib/formatters";
 
 interface Expert {
   id: string;
@@ -291,17 +292,7 @@ const ExpertsDirectory = () => {
     });
   };
 
-  const getEducationLabel = (level: string | null) => {
-    const labels: Record<string, string> = {
-      bachelors: "Bachelor's",
-      masters: "Master's",
-      phd: "PhD",
-      postdoc: "Postdoctoral",
-      professor: "Professor",
-      industry_professional: "Industry Professional"
-    };
-    return level ? labels[level] || level : null;
-  };
+  // getEducationLabel is now imported from @/lib/formatters
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -443,7 +434,7 @@ const ExpertsDirectory = () => {
                       />
                     </Link>
                     {expert.occupation && expert.occupation.length > 0 ? (
-                      <p className="text-sm font-medium text-accent">{expert.occupation.join(', ')}</p>
+                      <p className="text-sm font-medium text-accent">{formatOccupations(expert.occupation)}</p>
                     ) : expert.education_level && (
                       <p className="text-sm font-medium text-accent">{getEducationLabel(expert.education_level)}</p>
                     )}

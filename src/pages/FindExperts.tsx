@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminStatus } from "@/hooks/useAdminStatus";
 import { EditableText } from "@/components/EditableText";
 import { EditableProfileField } from "@/components/EditableProfileField";
+import { formatOccupations, getEducationLabel } from "@/lib/formatters";
 
 interface Expert {
   id: string;
@@ -107,17 +108,7 @@ const FindExperts = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const getEducationLabel = (level: string | null) => {
-    const labels: Record<string, string> = {
-      bachelors: "Bachelor's",
-      masters: "Master's",
-      phd: "PhD",
-      postdoc: "Postdoctoral",
-      professor: "Professor",
-      industry_professional: "Industry Professional"
-    };
-    return level ? labels[level] || level : null;
-  };
+  // getEducationLabel is now imported from @/lib/formatters
 
   if (loading || authLoading) {
     return (
@@ -269,11 +260,11 @@ const FindExperts = () => {
                           className="font-semibold text-lg"
                         />
                       </Link>
-                      {expert.occupation && expert.occupation.length > 0 ? (
-                        <p className="text-sm font-medium text-accent">{expert.occupation.join(', ')}</p>
-                      ) : expert.education_level && (
-                        <p className="text-sm font-medium text-accent">{getEducationLabel(expert.education_level)}</p>
-                      )}
+                    {expert.occupation && expert.occupation.length > 0 ? (
+                      <p className="text-sm font-medium text-accent">{formatOccupations(expert.occupation)}</p>
+                    ) : expert.education_level && (
+                      <p className="text-sm font-medium text-accent">{getEducationLabel(expert.education_level)}</p>
+                    )}
                       {expert.institution && (
                         <EditableProfileField
                           userId={expert.id}
