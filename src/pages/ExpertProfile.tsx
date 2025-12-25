@@ -18,6 +18,7 @@ import {
   ExternalLink,
   BookOpen
 } from "lucide-react";
+import { getEducationLabelFull } from "@/lib/formatters";
 
 interface ExpertData {
   id: string;
@@ -72,17 +73,7 @@ const ExpertProfile = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const getEducationLabel = (level: string | null) => {
-    const labels: Record<string, string> = {
-      bachelors: "Bachelor's Degree",
-      masters: "Master's Degree",
-      phd: "PhD",
-      postdoc: "Postdoctoral Researcher",
-      professor: "Professor",
-      industry_professional: "Industry Professional"
-    };
-    return level ? labels[level] || level : null;
-  };
+  // getEducationLabelFull is now imported from @/lib/formatters
 
   if (loading) {
     return (
@@ -146,7 +137,7 @@ const ExpertProfile = () => {
                     {expert.education_level && (
                       <div className="flex items-center gap-1">
                         <GraduationCap className="w-4 h-4" />
-                        <span>{getEducationLabel(expert.education_level)}</span>
+                        <span>{getEducationLabelFull(expert.education_level)}</span>
                       </div>
                     )}
                     {expert.institution && (
