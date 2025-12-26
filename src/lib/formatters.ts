@@ -20,7 +20,16 @@ export const formatOccupation = (occupation: string): string => {
     masters_student: "Master's Student",
     bachelors_student: "Bachelor's Student",
   };
-  return labels[occupation] || occupation.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  // Check for exact match first (case-insensitive)
+  const lowerOccupation = occupation.toLowerCase();
+  if (labels[lowerOccupation]) {
+    return labels[lowerOccupation];
+  }
+  if (labels[occupation]) {
+    return labels[occupation];
+  }
+  // Fallback: replace underscores and capitalize each word
+  return occupation.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 };
 
 export const formatOccupations = (occupations: string[] | null): string => {
