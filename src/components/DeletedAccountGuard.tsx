@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, MessageSquare, LogOut } from "lucide-react";
+import { AlertTriangle, LogOut } from "lucide-react";
 
 interface DeletedAccountGuardProps {
   children: React.ReactNode;
-  allowSupport?: boolean;
 }
 
-export const DeletedAccountGuard = ({ children, allowSupport = false }: DeletedAccountGuardProps) => {
+export const DeletedAccountGuard = ({ children }: DeletedAccountGuardProps) => {
   const [isDeleted, setIsDeleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -54,7 +53,7 @@ export const DeletedAccountGuard = ({ children, allowSupport = false }: DeletedA
     return null;
   }
 
-  if (isDeleted && !allowSupport) {
+  if (isDeleted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="max-w-md w-full">
@@ -64,17 +63,10 @@ export const DeletedAccountGuard = ({ children, allowSupport = false }: DeletedA
             </div>
             <CardTitle className="text-2xl">Your Account Has Been Deleted by an Admin</CardTitle>
             <CardDescription className="text-base mt-2">
-              If you believe this was a mistake, create a support ticket.
+              If you believe this was a mistake, please contact us via email.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button 
-              className="w-full" 
-              onClick={() => navigate("/support")}
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Support
-            </Button>
             <Button 
               variant="outline" 
               className="w-full"
