@@ -129,11 +129,6 @@ const Footer = () => {
                   About Us
                 </Link>
               </li>
-              <li>
-                <Link to="/support" className="text-muted-foreground hover:text-accent transition-colors">
-                  Support
-                </Link>
-              </li>
             </ul>
           </div>
           

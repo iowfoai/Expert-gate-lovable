@@ -12,7 +12,7 @@ import ExpertsDirectory from "@/pages/ExpertsDirectory";
 import ResearchersDirectory from "@/pages/ResearchersDirectory";
 import Connections from "@/pages/Connections";
 import About from "@/pages/About";
-import Support from "@/pages/Support";
+
 import NotFound from "@/pages/NotFound";
 import PasswordReset from "@/pages/PasswordReset";
 import Profile from "@/pages/Profile";
@@ -46,7 +46,7 @@ const AnimatedRoutes = () => {
         <Route path="/interview-history" element={<DeletedAccountGuard><PageTransition><InterviewHistory /></PageTransition></DeletedAccountGuard>} />
         <Route path="/interviews" element={<DeletedAccountGuard><PageTransition><Interviews /></PageTransition></DeletedAccountGuard>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-        <Route path="/support" element={<DeletedAccountGuard allowSupport><PageTransition><Support /></PageTransition></DeletedAccountGuard>} />
+        
         <Route path="/admin-panel" element={<PageTransition><AdminPanel /></PageTransition>} />
         <Route path="/privacy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
         <Route path="/terms" element={<PageTransition><TermsOfService /></PageTransition>} />

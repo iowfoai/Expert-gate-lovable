@@ -187,11 +187,6 @@ const Navigation = () => {
           About
         </Link>
       </SheetClose>
-      <SheetClose asChild>
-        <Link to="/support" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-lg transition-colors">
-          Support
-        </Link>
-      </SheetClose>
     </>
   );
 
@@ -270,9 +265,6 @@ const Navigation = () => {
               )}
               <Link to="/about" className={linkClass}>
                 About
-              </Link>
-              <Link to="/support" className={linkClass}>
-                Support
               </Link>
             </>
           )}
